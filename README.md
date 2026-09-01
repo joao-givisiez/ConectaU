@@ -27,8 +27,8 @@ Como consequência, há baixa participação em algumas atividades, perda de opo
 
 | Membro                              | Papel          |
 | ----------------------------------- | -------------- |
-|   | Desenvolvedor  |
-|   | Desenvolvedor  |
+| Guilherme Alexandre Cunha Silva     | Scrum Master   |
+| Gustavo de Assis Vieira             | Desenvolvedor  |
+| João Vitor Givisiez Lessa           | Desenvolvedor  |
 | Maria Luiza Santos Ferreira         | Product Owner  |
-|   | Scrum Master   |
-|   | Desenvolvedor  |
+
