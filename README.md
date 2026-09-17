@@ -39,7 +39,7 @@ diferentes canais:
 <p align="center">
   <img src="docs/imagens/informacoes-distribuidas.png"
        alt="Informações distribuídas em diferentes canais"
-       width="750">
+       width="600">
 </p>
 
 **E-mail institucional · Redes sociais · Grupos de mensagens ·
