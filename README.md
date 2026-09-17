@@ -83,18 +83,8 @@ Os resultados apontam para dificuldades relacionadas à descoberta
 oportuna de oportunidades e indicam interesse em recursos que
 facilitem sua busca e organização.
 
-### Descoberta tardia de oportunidades
-
 <p align="center">
-  <img src="docs/imagens/oportunidades-tarde.png"
-       alt="Participantes que descobriram oportunidades tarde demais"
-       width="850">
-</p>
-
-### Participação perdida por falta de informação
-
-<p align="center">
-  <img src="docs/imagens/deixou-de-participar.png"
+  <img src="docs/imagens/graficos.png"
        alt="Participantes que deixaram de participar por não saberem da oportunidade a tempo"
        width="850">
 </p>
@@ -126,10 +116,6 @@ O ConectaU é destinado à comunidade universitária, incluindo:
        width="750">
 </p>
 
-- 🎓 Estudantes de graduação e pós-graduação;
-- 👨‍🏫 Professores;
-- 🧑‍💼 Servidores e demais membros da comunidade universitária.
-
 A proposta contempla inicialmente os campi de **Lavras/MG** e
 **São Sebastião do Paraíso/MG**.
 
@@ -147,13 +133,8 @@ relevante para seu perfil.
        width="850">
 </p>
 
-O usuário poderá:
-
-- 🔎 buscar oportunidades;
-- 🏷️ filtrar por categorias e outros critérios;
-- ⭐ salvar oportunidades de interesse;
-- 🎯 receber recomendações relacionadas aos seus interesses;
-- 🔔 acompanhar prazos de inscrições e eventos.
+O fluxo permite que o usuário encontre, filtre e acompanhe
+oportunidades relevantes até o momento da participação.
 
 O ConectaU **não substitui os canais oficiais da UFLA**.
 
