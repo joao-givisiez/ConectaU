@@ -37,21 +37,19 @@ Os resultados dessa pesquisa serão utilizados de forma agregada como evidência
 
 ---
 
-## Solução
+## Pesquisa exploratória
 
-O ConectaU propõe uma plataforma web que centraliza e organiza oportunidades disponíveis na comunidade universitária da UFLA.
+Foi realizada uma pesquisa exploratória com membros da comunidade universitária da UFLA para compreender:
 
-A plataforma permite que os usuários encontrem atividades de acordo com seus interesses, utilizando filtros como categoria, curso, campus e período. Dessa forma, o projeto busca facilitar a descoberta de oportunidades e aproximar estudantes, professores e servidores das iniciativas que fazem sentido para eles.
+* como os usuários normalmente descobrem oportunidades;
+* quantos canais diferentes precisam acompanhar;
+* com que frequência descobrem oportunidades tardiamente;
+* se já deixaram de participar de oportunidades por não terem conhecimento delas a tempo;
+* quais recursos considerariam úteis em uma plataforma de descoberta de oportunidades.
 
-## Funcionalidades
+Os resultados serão analisados de forma agregada e utilizados como parte da validação inicial do problema e da proposta de solução.
 
-- Busca e descoberta de oportunidades
-- Filtros por categoria, curso, campus e período
-- Visualização de eventos e atividades
-- Salvamento de oportunidades de interesse
-- Lembretes de atividades
-- Personalização de interesses do usuário
-- Divulgação de oportunidades pela comunidade
+---
 
 ## Público-Alvo
 
@@ -62,6 +60,26 @@ A plataforma permite que os usuários encontrem atividades de acordo com seus in
 | Servidores  | Técnicos administrativos e demais servidores com vínculo à universidade |
 
 **Área de cobertura:** Lavras/MG e São Sebastião do Paraíso/MG.
+
+---
+
+## Proposta de solução
+
+O **ConectaU** será uma plataforma web que funciona como uma camada de descoberta de oportunidades da UFLA.
+
+A proposta é reunir, em um único ambiente, informações sobre diferentes tipos de oportunidades, permitindo que o usuário encontre aquilo que é mais relevante para seus interesses.
+
+A plataforma poderá organizar as oportunidades por características como:
+
+* categoria;
+* campus;
+* curso ou área de interesse;
+* período ou data;
+* prazo de inscrição.
+
+O usuário também poderá acompanhar oportunidades de seu interesse, facilitando o acesso posterior às informações e o acompanhamento de prazos.
+
+A plataforma **não tem como objetivo substituir os canais oficiais da UFLA**. A proposta é facilitar a descoberta e a organização das informações que já são divulgadas por diferentes canais, funcionando como uma camada complementar de acesso às oportunidades.
 
 ---
 
@@ -88,40 +106,6 @@ O impacto poderá ser acompanhado por indicadores como:
 * distribuição de oportunidades visualizadas entre diferentes cursos e campi;
 * percentual de usuários que relatam encontrar oportunidades relevantes;
 * percentual de usuários que relatam descobrir oportunidades tardiamente.
-
----
-
-## Proposta de solução
-
-O **ConectaU** será uma plataforma web que funciona como uma camada de descoberta de oportunidades da UFLA.
-
-A proposta é reunir, em um único ambiente, informações sobre diferentes tipos de oportunidades, permitindo que o usuário encontre aquilo que é mais relevante para seus interesses.
-
-A plataforma poderá organizar as oportunidades por características como:
-
-* categoria;
-* campus;
-* curso ou área de interesse;
-* período ou data;
-* prazo de inscrição.
-
-O usuário também poderá acompanhar oportunidades de seu interesse, facilitando o acesso posterior às informações e o acompanhamento de prazos.
-
-A plataforma **não tem como objetivo substituir os canais oficiais da UFLA**. A proposta é facilitar a descoberta e a organização das informações que já são divulgadas por diferentes canais, funcionando como uma camada complementar de acesso às oportunidades.
-
----
-
-## Pesquisa exploratória
-
-Foi realizada uma pesquisa exploratória com membros da comunidade universitária da UFLA para compreender:
-
-* como os usuários normalmente descobrem oportunidades;
-* quantos canais diferentes precisam acompanhar;
-* com que frequência descobrem oportunidades tardiamente;
-* se já deixaram de participar de oportunidades por não terem conhecimento delas a tempo;
-* quais recursos considerariam úteis em uma plataforma de descoberta de oportunidades.
-
-Os resultados serão analisados de forma agregada e utilizados como parte da validação inicial do problema e da proposta de solução.
 
 ---
 
