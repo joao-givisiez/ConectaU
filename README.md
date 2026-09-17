@@ -111,9 +111,9 @@ tarde demais, o motivo mais frequente foi ter tomado conhecimento
 O ConectaU é destinado à comunidade universitária, incluindo:
 
 <p align="center">
-  <img src="docs/imagens/publico-alvo.png"
+  <img src="docs/imagens/pa.png"
        alt="Público-alvo do ConectaU"
-       width="750">
+       width="600">
 </p>
 
 A proposta contempla inicialmente os campi de **Lavras/MG** e
@@ -128,9 +128,9 @@ ambiente e permite que cada usuário encontre aquilo que é mais
 relevante para seu perfil.
 
 <p align="center">
-  <img src="docs/imagens/fluxo.png"
+  <img src="docs/imagens/ps.png"
        alt="Fluxo de funcionamento do ConectaU"
-       width="850">
+       width="600">
 </p>
 
 O fluxo permite que o usuário encontre, filtre e acompanhe
