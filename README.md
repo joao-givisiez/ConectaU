@@ -86,15 +86,15 @@ facilitem sua busca e organização.
 <p align="center">
   <img src="docs/imagens/g1.png"
        alt="Participantes que deixaram de participar por não saberem da oportunidade a tempo"
-       width="850">
+       width="600">
 </p>
 
 ### Recursos considerados úteis
 
 <p align="center">
-  <img src="docs/imagens/recursos-mais-desejados.png"
+  <img src="docs/imagens/g2.png"
        alt="Recursos considerados úteis pelos participantes"
-       width="850">
+       width="600">
 </p>
 
 Entre os participantes que relataram ter descoberto oportunidades
