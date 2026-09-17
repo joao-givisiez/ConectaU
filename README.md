@@ -9,15 +9,15 @@
 
 ## Problema
 
-A UFLA oferece diversas oportunidades para sua comunidade universitária, como eventos, projetos, bolsas, atividades acadêmicas, culturais e esportivas e processos seletivos.
+A comunicação de oportunidades dentro da UFLA ocorre de forma descentralizada, utilizando diferentes plataformas e meios de divulgação.
 
-Essas informações são divulgadas por diferentes canais, como redes sociais, grupos de mensagens, e-mails, sites institucionais, SIG, professores e organizações estudantis. A própria UFLA possui diferentes mecanismos de divulgação de eventos e informações institucionais.
+Eventos, bolsas, projetos, processos seletivos e demais iniciativas podem ser publicados em canais institucionais, redes sociais, grupos de mensagens, páginas específicas de setores, entidades estudantis e outros meios.
 
-Para acompanhar essas oportunidades, o usuário precisa monitorar diferentes fontes e identificar, entre muitas informações, aquilo que é realmente relevante para seu perfil.
+Essa distribuição dificulta a centralização e o acompanhamento das informações pela comunidade acadêmica. Além disso, o volume de conteúdos divulgados torna mais difícil identificar quais oportunidades possuem relação com os interesses de cada usuário.
 
-Assim, **o desafio não é a falta de oportunidades, mas o custo de descobri-las a tempo e encontrar aquelas que são relevantes para cada pessoa**.
+Como consequência, informações relevantes podem ser encontradas após o período de inscrição ou simplesmente não serem visualizadas pelo público que poderia ter interesse em participar.
 
-Essa dispersão pode fazer com que membros da comunidade descubram determinadas oportunidades tardiamente ou não cheguem a conhecê-las, dificultando o acesso e a participação em atividades oferecidas pela universidade.
+Dessa forma, o problema identificado está relacionado à fragmentação das informações e à dificuldade de localizar, filtrar e acompanhar oportunidades relevantes dentro do ambiente universitário.
 
 ---
 
