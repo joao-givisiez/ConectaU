@@ -84,7 +84,7 @@ oportuna de oportunidades e indicam interesse em recursos que
 facilitem sua busca e organização.
 
 <p align="center">
-  <img src="docs/imagens/graficos.png"
+  <img src="docs/imagens/graficos1.png"
        alt="Participantes que deixaram de participar por não saberem da oportunidade a tempo"
        width="850">
 </p>
