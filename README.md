@@ -1,133 +1,250 @@
-# ConectaU — Descubra, participe, conecte-se
+# 🌱 ConectaU
+### Descubra, participe, conecte-se.
 
 <p align="center">
-  <strong>Plataforma web para conectar a comunidade universitária da UFLA a eventos, atividades e oportunidades</strong><br>
-  Aproximando estudantes, professores e servidores dos campi de Lavras e São Sebastião do Paraíso
+  <img src="docs/imagens/logo.png"
+       alt="Visão geral do ConectaU"
+       width="900">
 </p>
 
----
-
-## Problema
-
-A comunicação de oportunidades dentro da UFLA ocorre de forma descentralizada, utilizando diferentes plataformas e meios de divulgação.
-
-Eventos, bolsas, projetos, processos seletivos e demais iniciativas podem ser publicados em canais institucionais, redes sociais, grupos de mensagens, páginas específicas de setores, entidades estudantis e outros meios.
-
-Essa distribuição dificulta a centralização e o acompanhamento das informações pela comunidade acadêmica. Além disso, o volume de conteúdos divulgados torna mais difícil identificar quais oportunidades possuem relação com os interesses de cada usuário.
-
-Como consequência, informações relevantes podem ser encontradas após o período de inscrição ou simplesmente não serem visualizadas pelo público que poderia ter interesse em participar.
-
-Dessa forma, o problema identificado está relacionado à fragmentação das informações e à dificuldade de localizar, filtrar e acompanhar oportunidades relevantes dentro do ambiente universitário.
+> **O problema não é a falta de oportunidades na UFLA.
+> É o custo de descobri-las a tempo e encontrar as que realmente são
+> relevantes para cada pessoa.**
 
 ---
 
-## Motivação e evidências
+## 📌 Sobre o ConectaU
 
-A comunicação com estudantes universitários envolve diferentes canais e formas de divulgação. Uma meta-análise publicada por Gilani (2024), que reuniu **17 pesquisas envolvendo 20.134 estudantes**, analisou as preferências e comportamentos dos estudantes em relação às comunicações de suas universidades. O estudo identificou que os estudantes esperam que as instituições utilizem diferentes canais, incluindo e-mail, redes sociais e portais estudantis.
+O **ConectaU** é uma plataforma web que reúne e personaliza
+oportunidades da UFLA, como eventos, atividades, bolsas, projetos
+e processos seletivos.
 
-Outro estudo, realizado por Simpson et al. (2025), analisou o uso do e-mail como ferramenta de comunicação em massa no ensino superior, discutindo seus benefícios e limitações como meio de comunicação com estudantes.
-
-Além da comunicação, a participação em atividades universitárias pode estar relacionada à experiência acadêmica dos estudantes. Kulp, Pascale e Grandstaff (2021) investigaram a participação de estudantes em atividades extracurriculares promovidas pelo campus e encontraram associações entre a participação em determinados eventos e resultados como desempenho acadêmico, persistência e retenção.
-
-Uma revisão sistemática e meta-análise publicada por van Kessel et al. (2025), envolvendo 26 estudos, também identificou associações positivas entre o sentimento de pertencimento à universidade e resultados acadêmicos e de bem-estar. Os autores ressaltam, entretanto, que os estudos analisados não permitem estabelecer relações de causalidade.
-
-No contexto da UFLA, foi realizada uma **pesquisa exploratória com membros da comunidade universitária** para compreender como as pessoas descobrem oportunidades, quantos canais acompanham e se já descobriram ou deixaram de participar de alguma oportunidade por terem tomado conhecimento dela tardiamente.
-
-Os resultados dessa pesquisa serão utilizados de forma agregada como evidência local para a validação inicial do problema.
+A proposta é facilitar a descoberta dessas oportunidades,
+funcionando como uma **camada complementar aos canais oficiais
+da universidade**.
 
 ---
 
-## Pesquisa exploratória
+## ❗ O problema
 
-Foi realizada uma pesquisa exploratória com membros da comunidade universitária da UFLA para compreender:
+A UFLA oferece e divulga diversas oportunidades para sua comunidade
+universitária.
 
-* como os usuários normalmente descobrem oportunidades;
-* quantos canais diferentes precisam acompanhar;
-* com que frequência descobrem oportunidades tardiamente;
-* se já deixaram de participar de oportunidades por não terem conhecimento delas a tempo;
-* quais recursos considerariam úteis em uma plataforma de descoberta de oportunidades.
+O desafio está em fazer **a oportunidade certa chegar à pessoa certa,
+no momento certo**.
 
-Os resultados serão analisados de forma agregada e utilizados como parte da validação inicial do problema e da proposta de solução.
+Atualmente, essas informações podem estar distribuídas entre
+diferentes canais:
 
----
+<p align="center">
+  <img src="docs/imagens/informacoes-distribuidas.png"
+       alt="Informações distribuídas em diferentes canais"
+       width="600">
+</p>
 
-## Público-Alvo
+**E-mail institucional · Redes sociais · Grupos de mensagens ·
+Sites e portais · SIG · Professores · Organizações estudantis**
 
-| Perfil      | Descrição                                                               |
-| ----------- | ----------------------------------------------------------------------- |
-| Estudantes  | Graduação e pós-graduação da UFLA                                       |
-| Professores | Docentes de diferentes departamentos da UFLA                            |
-| Servidores  | Técnicos administrativos e demais servidores com vínculo à universidade |
+Essa dispersão exige que cada pessoa acompanhe diferentes fontes e
+identifique, entre muitas informações, aquilo que é relevante para
+seu perfil.
 
-**Área de cobertura:** Lavras/MG e São Sebastião do Paraíso/MG.
-
----
-
-## Proposta de solução
-
-O **ConectaU** será uma plataforma web que funciona como uma camada de descoberta de oportunidades da UFLA.
-
-A proposta é reunir, em um único ambiente, informações sobre diferentes tipos de oportunidades, permitindo que o usuário encontre aquilo que é mais relevante para seus interesses.
-
-A plataforma poderá organizar as oportunidades por características como:
-
-* categoria;
-* campus;
-* curso ou área de interesse;
-* período ou data;
-* prazo de inscrição.
-
-O usuário também poderá acompanhar oportunidades de seu interesse, facilitando o acesso posterior às informações e o acompanhamento de prazos.
-
-A plataforma **não tem como objetivo substituir os canais oficiais da UFLA**. A proposta é facilitar a descoberta e a organização das informações que já são divulgadas por diferentes canais, funcionando como uma camada complementar de acesso às oportunidades.
+Como consequência, uma oportunidade pode ser descoberta tarde demais
+ou nem chegar ao conhecimento de quem poderia participar.
 
 ---
 
-## Impacto social esperado
+## 📚 Motivação e evidências
 
-O ConectaU busca facilitar o acesso da comunidade universitária às oportunidades existentes na UFLA, reduzindo o esforço necessário para encontrá-las e aumentando a possibilidade de que cada pessoa conheça atividades relacionadas aos seus interesses.
+Estudos sobre comunicação no ensino superior indicam que estudantes
+recebem informações por diferentes canais e que aspectos como
+**relevância, preferências e excesso de mensagens** influenciam a
+forma como essas informações são percebidas.
+
+Além disso, pesquisas relacionam a participação em atividades
+extracurriculares e o sentimento de pertencimento à experiência e a
+diferentes resultados acadêmicos dos estudantes.
+
+Essas evidências, juntamente com uma pesquisa exploratória realizada
+com membros da comunidade da UFLA, ajudaram a fundamentar o problema
+abordado pelo ConectaU.
+
+---
+
+## 📊 Pesquisa exploratória
+
+Para realizar uma validação inicial do problema dentro da comunidade
+da UFLA, foi elaborado um formulário sobre a descoberta de eventos,
+projetos, bolsas, processos seletivos e outras oportunidades.
+
+A pesquisa recebeu **26 respostas**.
+
+Os resultados apontam para dificuldades relacionadas à descoberta
+oportuna de oportunidades e indicam interesse em recursos que
+facilitem sua busca e organização.
+
+<p align="center">
+  <img src="docs/imagens/g1.png"
+       alt="Participantes que deixaram de participar por não saberem da oportunidade a tempo"
+       width="600">
+</p>
+
+### Recursos considerados úteis
+
+<p align="center">
+  <img src="docs/imagens/g2.png"
+       alt="Recursos considerados úteis pelos participantes"
+       width="600">
+</p>
+
+Entre os participantes que relataram ter descoberto oportunidades
+tarde demais, o motivo mais frequente foi ter tomado conhecimento
+**após o encerramento das inscrições**.
+
+> **Importante:** a pesquisa possui caráter exploratório e não tem como
+> objetivo representar estatisticamente toda a comunidade da UFLA.
+
+---
+
+## 👥 Público-alvo
+
+O ConectaU é destinado à comunidade universitária, incluindo:
+
+<p align="center">
+  <img src="docs/imagens/pa.png"
+       alt="Público-alvo do ConectaU"
+       width="600">
+</p>
+
+A proposta contempla inicialmente os campi de **Lavras/MG** e
+**São Sebastião do Paraíso/MG**.
+
+---
+
+## 💡 Proposta de solução
+
+O ConectaU propõe uma plataforma que reúne oportunidades em um único
+ambiente e permite que cada usuário encontre aquilo que é mais
+relevante para seu perfil.
+
+<p align="center">
+  <img src="docs/imagens/ps.png"
+       alt="Fluxo de funcionamento do ConectaU"
+       width="600">
+</p>
+
+O fluxo permite que o usuário encontre, filtre e acompanhe
+oportunidades relevantes até o momento da participação.
+
+O ConectaU **não substitui os canais oficiais da UFLA**.
+
+A proposta é atuar como uma **camada complementar de descoberta e
+organização**, facilitando o acesso às informações que já são
+divulgadas pela universidade e por sua comunidade.
+
+---
+
+## 🎯 Impacto social esperado
+
+O impacto esperado está relacionado principalmente à ampliação do
+acesso às oportunidades e ao estímulo à participação da comunidade.
+
+<!-- <p align="center">
+  <img src="docs/imagens/impacto-conectau.png"
+       alt="Impacto social esperado do ConectaU"
+       width="750">
+</p>-->
 
 Espera-se contribuir para:
 
-* ampliar o acesso a eventos, projetos, bolsas e outras oportunidades;
-* facilitar a descoberta de atividades relevantes para diferentes perfis;
-* estimular a participação da comunidade universitária;
-* aproximar estudantes, professores e servidores das atividades oferecidas pela universidade;
-* contribuir para uma maior integração entre diferentes cursos, áreas e campi.
+- ampliar o acesso às oportunidades;
+- facilitar a descoberta de atividades relevantes;
+- estimular a participação da comunidade;
+- aproximar estudantes, professores e servidores;
+- fortalecer a integração entre cursos, áreas e campi.
 
-### Como medir o impacto
+### 📈 Como medir o impacto
 
 O impacto poderá ser acompanhado por indicadores como:
 
-* quantidade de oportunidades cadastradas;
-* quantidade de usuários ativos;
-* quantidade de oportunidades visualizadas e salvas;
-* quantidade de inscrições ou participações originadas pela plataforma;
-* distribuição de oportunidades visualizadas entre diferentes cursos e campi;
-* percentual de usuários que relatam encontrar oportunidades relevantes;
-* percentual de usuários que relatam descobrir oportunidades tardiamente.
+- quantidade de oportunidades cadastradas;
+- quantidade de oportunidades visualizadas;
+- quantidade de usuários participantes;
+- quantidade de oportunidades salvas;
+- distribuição de oportunidades visualizadas entre cursos e campi;
+- participação originada a partir da plataforma;
+- redução de relatos de descoberta tardia;
+- percepção dos usuários sobre a facilidade de encontrar oportunidades.
 
 ---
 
-## Equipe
+## 🧪 Exemplo de uso
 
-| Membro                          | Papel         |
-| ------------------------------- | ------------- |
-| Guilherme Alexandre Cunha Silva | Scrum Master  |
-| Gustavo de Assis Vieira         | Desenvolvedor |
-| João Vitor Givisiez Lessa       | Desenvolvedor |
-| Maria Luiza Santos Ferreira     | Product Owner |
+Imagine um estudante interessado em **pesquisa e tecnologia**.
+
+Em vez de acompanhar diversos canais separadamente, ele acessa o
+ConectaU e encontra oportunidades relacionadas aos seus interesses.
+
+Ele pode filtrar as oportunidades, salvar aquelas que considera
+relevantes e acompanhar seus prazos.
+
+Assim, uma oportunidade que poderia passar despercebida pode ser
+encontrada pelo estudante no momento adequado.
 
 ---
 
-## Referências
+## 🆔 Identidade da startup
 
-1. GILANI, David. *Student attitudes and preferences towards communications from their university – a meta-analysis of student communications research within UK higher education institutions*. Journal of Higher Education Policy and Management, v. 46, n. 3, p. 274–290, 2024. DOI: 10.1080/1360080X.2024.2344234. [DOI / artigo](https://doi.org/10.1080/1360080X.2024.2344234?utm_source=chatgpt.com)
+**Nome:** ConectaU
 
-2. SIMPSON, Judith; BRANAGAN, Caitlin; LAU CHENG VON, Vonnie; WILLIAMS, Lily. *Spamming our students? The use of email as a mass communication tool in higher education*. Journal of Further and Higher Education, p. 152–159, 2025. DOI: 10.1080/13603108.2024.2440705. [DOI / artigo](https://doi.org/10.1080/13603108.2024.2440705?utm_source=chatgpt.com)
+**Slogan:** *Descubra, participe, conecte-se.*
 
-3. KULP, Amanda M.; PASCALE, Amanda Blakewood; GRANDSTAFF, Matthew. *Types of Extracurricular Campus Activities and First-Year Students’ Academic Success*. Journal of College Student Retention: Research, Theory & Practice, v. 23, n. 3, p. 747–767, 2021. DOI: 10.1177/1521025119876249. [DOI / artigo](https://doi.org/10.1177/1521025119876249?utm_source=chatgpt.com)
+### Proposta de valor
 
-4. VAN KESSEL, Gisela; RYAN, Colleen; PARAS, Lorraine; JOHNSON, Natalie; ZARIFF, Razia Z.; STALLMAN, Helen M. *Relationship between university belonging and student outcomes: A systematic review and meta-analysis*. The Australian Educational Researcher, v. 52, p. 2511–2534, 2025. DOI: 10.1007/s13384-025-00822-8. [DOI / artigo](https://doi.org/10.1007/s13384-025-00822-8?utm_source=chatgpt.com)
+> **Uma plataforma que reúne e personaliza oportunidades da UFLA para
+> que cada membro da comunidade encontre o que é relevante para ele
+> antes que o prazo acabe.**
 
-5. UNIVERSIDADE FEDERAL DE LAVRAS (UFLA). *Divulgação de eventos*. Catálogo de Serviços da UFLA. [Serviço de divulgação de eventos da UFLA](https://ufla.br/comunicacao/catalogo-de-servicos/divulgacao-de-eventos?utm_source=chatgpt.com)
+---
+
+## 👨‍💻 Equipe
+
+| Integrante | Função |
+|---|---|
+| **Guilherme Alexandre Cunha Silva** | Scrum Master |
+| **Gustavo de Assis Vieira** | Desenvolvedor |
+| **João Vitor Givisiez Lessa** | Desenvolvedor |
+| **Maria Luiza Santos Ferreira** | Product Owner |
+
+---
+
+## 📚 Referências
+
+1. **GILANI, David.** *Student attitudes and preferences towards
+   communications from their university – a meta-analysis of student
+   communications research within UK higher education institutions.*
+   Journal of Higher Education Policy and Management, v. 46, n. 3,
+   p. 274–290, 2024.  
+   DOI: 10.1080/1360080X.2024.2344234.
+
+2. **SIMPSON, Judith; BRANAGAN, Caitlin; LAU CHENG VON, Vonnie;
+   WILLIAMS, Lily.** *Spamming our students? The use of email as a
+   mass communication tool in higher education.*
+   Journal of Further and Higher Education, p. 152–159, 2025.  
+   DOI: 10.1080/13603108.2024.2440705.
+
+3. **KULP, Amanda M.; PASCALE, Amanda Blakewood; GRANDSTAFF,
+   Matthew.** *Types of Extracurricular Campus Activities and
+   First-Year Students’ Academic Success.*
+   Journal of College Student Retention: Research, Theory & Practice,
+   v. 23, n. 3, p. 747–767, 2021.  
+   DOI: 10.1177/1521025119876249.
+
+4. **VAN KESSEL, Gisela et al.** *Relationship between university
+   belonging and student outcomes: A systematic review and
+   meta-analysis.* The Australian Educational Researcher, v. 52,
+   p. 2511–2534, 2025.  
+   DOI: 10.1007/s13384-025-00822-8.
+
+5. **UNIVERSIDADE FEDERAL DE LAVRAS (UFLA).**
+   *Divulgação de eventos.* Catálogo de Serviços da UFLA.
