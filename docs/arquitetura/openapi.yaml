@@ -1,0 +1,1038 @@
+openapi: 3.0.3
+info:
+  title: ConectaU — Contrato de APIs REST
+  version: 1.0.0
+  description: Contrato arquitetural proposto para a Parte 2, itens 4.1 e 4.2. Não implica endpoints implementados.
+    Tokens de usuário devem ser verificados; criação/edição de oportunidades requer papel publicador.
+servers:
+- url: https://api.conectau.example
+  description: Host fictício, apenas para documentação
+tags:
+- name: Usuários
+- name: Oportunidades
+- name: Recomendações
+- name: Favoritos
+- name: Notificações
+paths:
+  /api/v1/usuarios:
+    post:
+      tags:
+      - Usuários
+      summary: Criar perfil
+      responses:
+        '201':
+          description: Recurso criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Usuario'
+          headers:
+            Location:
+              description: URL do recurso criado
+              schema: &id002
+                type: string
+        '400':
+          description: Requisição inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '404':
+          description: Recurso não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '401':
+          description: Autenticação necessária
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '409':
+          description: Conflito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsuarioCriacao'
+  /api/v1/usuarios/{usuarioId}:
+    get:
+      tags:
+      - Usuários
+      summary: Consultar perfil
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Usuario'
+        '400':
+          description: Requisição inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '404':
+          description: Recurso não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '401':
+          description: Autenticação necessária
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: usuarioId
+        in: path
+        required: true
+        schema: &id001
+          type: string
+          format: uuid
+    patch:
+      tags:
+      - Usuários
+      summary: Atualizar perfil
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Usuario'
+        '400':
+          description: Requisição inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '404':
+          description: Recurso não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '401':
+          description: Autenticação necessária
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsuarioAtualizacao'
+      parameters:
+      - name: usuarioId
+        in: path
+        required: true
+        schema: *id001
+  /api/v1/oportunidades:
+    get:
+      tags:
+      - Oportunidades
+      summary: Listar oportunidades
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListaOportunidades'
+        '400':
+          description: Requisição inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '404':
+          description: Recurso não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+      security: []
+      parameters:
+      - name: busca
+        in: query
+        required: false
+        schema: *id002
+      - name: campus
+        in: query
+        required: false
+        schema: &id006
+          type: string
+          enum:
+          - LAVRAS
+          - SAO_SEBASTIAO_DO_PARAISO
+      - name: categoria
+        in: query
+        required: false
+        schema: &id009
+          type: string
+          enum:
+          - EVENTO
+          - ATIVIDADE
+          - BOLSA
+          - PROJETO
+          - PROCESSO_SELETIVO
+      - name: status
+        in: query
+        required: false
+        schema: &id010
+          type: string
+          enum:
+          - RASCUNHO
+          - PUBLICADA
+          - ENCERRADA
+      - &id003
+        name: pagina
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+      - &id004
+        name: limite
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+    post:
+      tags:
+      - Oportunidades
+      summary: Criar oportunidade
+      responses:
+        '201':
+          description: Recurso criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Oportunidade'
+          headers:
+            Location:
+              description: URL do recurso criado
+              schema: *id002
+        '400':
+          description: Requisição inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '404':
+          description: Recurso não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '401':
+          description: Autenticação necessária
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '422':
+          description: Regra de negócio não atendida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OportunidadeCriacao'
+  /api/v1/oportunidades/{oportunidadeId}:
+    get:
+      tags:
+      - Oportunidades
+      summary: Consultar oportunidade e links HATEOAS
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Oportunidade'
+              example:
+                id: 550e8400-e29b-41d4-a716-446655440002
+                titulo: Bolsa de iniciação científica em computação
+                descricao: Projeto de pesquisa em tecnologia
+                categoria: BOLSA
+                campus: LAVRAS
+                prazoInscricao: '2026-11-15T23:59:00-03:00'
+                fonteUrl: https://www.ufla.br/
+                tags:
+                - pesquisa
+                - tecnologia
+                status: PUBLICADA
+                _links:
+                  self:
+                    href: /api/v1/oportunidades/550e8400-e29b-41d4-a716-446655440002
+                    method: GET
+                  colecao:
+                    href: /api/v1/oportunidades
+                    method: GET
+                  salvar:
+                    href: /api/v1/favoritos
+                    method: POST
+                  fonteOficial:
+                    href: https://www.ufla.br/
+                    method: GET
+        '400':
+          description: Requisição inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '404':
+          description: Recurso não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+      security: []
+      parameters:
+      - name: oportunidadeId
+        in: path
+        required: true
+        schema: *id001
+    patch:
+      tags:
+      - Oportunidades
+      summary: Atualizar oportunidade
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Oportunidade'
+        '400':
+          description: Requisição inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '404':
+          description: Recurso não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '401':
+          description: Autenticação necessária
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '422':
+          description: Regra de negócio não atendida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OportunidadeAtualizacao'
+      parameters:
+      - name: oportunidadeId
+        in: path
+        required: true
+        schema: *id001
+    delete:
+      tags:
+      - Oportunidades
+      summary: Excluir oportunidade
+      responses:
+        '204':
+          description: Removido sem conteúdo
+        '400':
+          description: Requisição inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '404':
+          description: Recurso não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '401':
+          description: Autenticação necessária
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: oportunidadeId
+        in: path
+        required: true
+        schema: *id001
+  /api/v1/recomendacoes:
+    get:
+      tags:
+      - Recomendações
+      summary: Obter recomendações personalizadas
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListaRecomendacoes'
+        '400':
+          description: Requisição inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '404':
+          description: Recurso não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '401':
+          description: Autenticação necessária
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+      security:
+      - bearerAuth: []
+      parameters:
+      - &id005
+        name: usuarioId
+        in: query
+        required: true
+        schema: *id001
+        description: Deve corresponder à identidade autenticada
+      - *id003
+      - *id004
+  /api/v1/favoritos:
+    get:
+      tags:
+      - Favoritos
+      summary: Listar favoritos
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListaFavoritos'
+        '400':
+          description: Requisição inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '404':
+          description: Recurso não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '401':
+          description: Autenticação necessária
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+      security:
+      - bearerAuth: []
+      parameters:
+      - *id005
+      - *id003
+      - *id004
+    post:
+      tags:
+      - Favoritos
+      summary: Salvar oportunidade
+      responses:
+        '201':
+          description: Recurso criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Favorito'
+          headers:
+            Location:
+              description: URL do recurso criado
+              schema: *id002
+        '400':
+          description: Requisição inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '404':
+          description: Recurso não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '401':
+          description: Autenticação necessária
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '409':
+          description: Conflito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '422':
+          description: Regra de negócio não atendida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FavoritoCriacao'
+  /api/v1/favoritos/{favoritoId}:
+    delete:
+      tags:
+      - Favoritos
+      summary: Remover favorito
+      responses:
+        '204':
+          description: Removido sem conteúdo
+        '400':
+          description: Requisição inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '404':
+          description: Recurso não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '401':
+          description: Autenticação necessária
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: favoritoId
+        in: path
+        required: true
+        schema: *id001
+  /api/v1/notificacoes:
+    get:
+      tags:
+      - Notificações
+      summary: Listar notificações
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListaNotificacoes'
+        '400':
+          description: Requisição inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '404':
+          description: Recurso não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '401':
+          description: Autenticação necessária
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+      security:
+      - bearerAuth: []
+      parameters:
+      - *id005
+      - name: lida
+        in: query
+        required: false
+        schema:
+          type: boolean
+      - *id003
+      - *id004
+  /api/v1/notificacoes/{notificacaoId}:
+    get:
+      tags:
+      - Notificações
+      summary: Consultar notificação
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notificacao'
+        '400':
+          description: Requisição inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '404':
+          description: Recurso não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '401':
+          description: Autenticação necessária
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: notificacaoId
+        in: path
+        required: true
+        schema: *id001
+    patch:
+      tags:
+      - Notificações
+      summary: Marcar notificação como lida
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notificacao'
+        '400':
+          description: Requisição inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '404':
+          description: Recurso não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '401':
+          description: Autenticação necessária
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '403':
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificacaoAtualizacao'
+      parameters:
+      - name: notificacaoId
+        in: path
+        required: true
+        schema: *id001
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Erro:
+      type: object
+      properties:
+        codigo: *id002
+        mensagem: *id002
+      required:
+      - codigo
+      - mensagem
+    UsuarioCriacao:
+      type: object
+      properties:
+        nome: *id002
+        email: &id008
+          type: string
+          format: email
+        curso: *id002
+        campus: *id006
+        interesses: &id007
+          type: array
+          items: *id002
+      required:
+      - nome
+      - email
+      - curso
+      - campus
+    UsuarioAtualizacao:
+      type: object
+      properties:
+        nome: *id002
+        curso: *id002
+        campus: *id006
+        interesses: *id007
+    Usuario:
+      type: object
+      properties:
+        id: *id001
+        nome: *id002
+        email: *id008
+        curso: *id002
+        campus: *id006
+        interesses: *id007
+      required:
+      - id
+      - nome
+      - email
+      - curso
+      - campus
+      - interesses
+    OportunidadeCriacao:
+      type: object
+      properties: &id011
+        titulo: *id002
+        descricao: *id002
+        categoria: *id009
+        campus: *id006
+        prazoInscricao: &id012
+          type: string
+          format: date-time
+        fonteUrl: &id013
+          type: string
+          format: uri
+        tags: &id014
+          type: array
+          items: *id002
+        status: *id010
+      required:
+      - titulo
+      - categoria
+      - campus
+      - prazoInscricao
+      - fonteUrl
+    OportunidadeAtualizacao:
+      type: object
+      properties: *id011
+    Oportunidade:
+      type: object
+      properties:
+        id: *id001
+        titulo: *id002
+        descricao: *id002
+        categoria: *id009
+        campus: *id006
+        prazoInscricao: *id012
+        fonteUrl: *id013
+        tags: *id014
+        status: *id010
+        _links:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Link'
+      required:
+      - id
+      - titulo
+      - categoria
+      - campus
+      - prazoInscricao
+      - fonteUrl
+      - status
+      - _links
+    Link:
+      type: object
+      properties:
+        href:
+          type: string
+          format: uri-reference
+        method:
+          type: string
+          enum:
+          - GET
+          - POST
+          - PATCH
+          - DELETE
+      required:
+      - href
+      - method
+    Recomendacao:
+      type: object
+      properties:
+        oportunidadeId: *id001
+        pontuacao:
+          type: number
+          minimum: 0
+          maximum: 1
+        motivos:
+          type: array
+          items: *id002
+      required:
+      - oportunidadeId
+      - pontuacao
+      - motivos
+    FavoritoCriacao:
+      type: object
+      properties:
+        oportunidadeId: *id001
+      required:
+      - oportunidadeId
+    Favorito:
+      type: object
+      properties:
+        id: *id001
+        usuarioId: *id001
+        oportunidadeId: *id001
+        criadoEm:
+          type: string
+          format: date-time
+      required:
+      - id
+      - usuarioId
+      - oportunidadeId
+      - criadoEm
+    Notificacao:
+      type: object
+      properties:
+        id: *id001
+        usuarioId: *id001
+        oportunidadeId: *id001
+        titulo: *id002
+        mensagem: *id002
+        lida:
+          type: boolean
+        criadaEm:
+          type: string
+          format: date-time
+      required:
+      - id
+      - usuarioId
+      - titulo
+      - mensagem
+      - lida
+      - criadaEm
+    NotificacaoAtualizacao:
+      type: object
+      properties:
+        lida:
+          type: boolean
+          enum:
+          - true
+      required:
+      - lida
+    ListaOportunidades:
+      type: object
+      properties:
+        itens:
+          type: array
+          items:
+            $ref: '#/components/schemas/Oportunidade'
+        pagina:
+          type: integer
+          minimum: 1
+        limite:
+          type: integer
+          minimum: 1
+          maximum: 100
+        total:
+          type: integer
+          minimum: 0
+      required:
+      - itens
+      - pagina
+      - limite
+      - total
+    ListaRecomendacoes:
+      type: object
+      properties:
+        itens:
+          type: array
+          items:
+            $ref: '#/components/schemas/Recomendacao'
+        pagina:
+          type: integer
+          minimum: 1
+        limite:
+          type: integer
+          minimum: 1
+          maximum: 100
+        total:
+          type: integer
+          minimum: 0
+      required:
+      - itens
+      - pagina
+      - limite
+      - total
+    ListaFavoritos:
+      type: object
+      properties:
+        itens:
+          type: array
+          items:
+            $ref: '#/components/schemas/Favorito'
+        pagina:
+          type: integer
+          minimum: 1
+        limite:
+          type: integer
+          minimum: 1
+          maximum: 100
+        total:
+          type: integer
+          minimum: 0
+      required:
+      - itens
+      - pagina
+      - limite
+      - total
+    ListaNotificacoes:
+      type: object
+      properties:
+        itens:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notificacao'
+        pagina:
+          type: integer
+          minimum: 1
+        limite:
+          type: integer
+          minimum: 1
+          maximum: 100
+        total:
+          type: integer
+          minimum: 0
+      required:
+      - itens
+      - pagina
+      - limite
+      - total
