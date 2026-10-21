@@ -1,0 +1,1047 @@
+openapi: 3.0.3
+info:
+  title: ConectaU — Contrato de APIs REST
+  version: 2.0.0
+  description: |
+    Contrato arquitetural proposto para a Parte 2 (itens 4.1 e 4.2). Não implica endpoints implementados.
+
+    Papéis: ESTUDANTE (comunidade) e ADMIN. Não existe papel de publicador — toda escrita no
+    catálogo de oportunidades é exclusiva de ADMIN.
+
+    O ConectaU é uma camada de descoberta: a inscrição acontece no canal oficial, pelo link
+    `fonteOficial`. Por isso não há recursos de inscrição nem de vagas.
+
+    Recursos pessoais (favoritos, lembretes, recomendações, notificações, conversas) usam sempre a
+    identidade do token; `usuarioId` não é aceito em query.
+
+    Rotas /internal/** (comandos da SAGA e tools do assistente) não são expostas no gateway e,
+    portanto, não constam deste contrato.
+servers:
+  - url: https://api.conectau.example
+    description: Host fictício, apenas para documentação
+tags:
+  - name: Identidade
+  - name: Oportunidades
+  - name: Coleta
+  - name: Engajamento
+  - name: Recomendações
+  - name: Notificações
+  - name: Assistente
+
+paths:
+  /api/v1/usuarios:
+    post:
+      tags: [Identidade]
+      summary: Criar perfil
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UsuarioCriacao' }
+      responses:
+        '201':
+          description: Recurso criado
+          headers:
+            Location:
+              description: URL do recurso criado
+              schema: { type: string }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Usuario' }
+        '400': { $ref: '#/components/responses/RequisicaoInvalida' }
+        '409': { $ref: '#/components/responses/Conflito' }
+
+  /api/v1/sessoes:
+    post:
+      tags: [Identidade]
+      summary: Autenticar e obter JWT
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Credenciais' }
+      responses:
+        '201':
+          description: Sessão criada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Sessao' }
+        '400': { $ref: '#/components/responses/RequisicaoInvalida' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+
+  /api/v1/usuarios/{usuarioId}:
+    parameters:
+      - $ref: '#/components/parameters/UsuarioIdPath'
+    get:
+      tags: [Identidade]
+      summary: Consultar perfil
+      description: Permitido apenas ao dono do perfil; o id deve corresponder ao `sub` do token.
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Usuario' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/AcessoNegado' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+    patch:
+      tags: [Identidade]
+      summary: Atualizar perfil
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UsuarioAtualizacao' }
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Usuario' }
+        '400': { $ref: '#/components/responses/RequisicaoInvalida' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/AcessoNegado' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+
+  /api/v1/oportunidades:
+    get:
+      tags: [Oportunidades]
+      summary: Listar oportunidades (modelo de leitura)
+      security: []
+      parameters:
+        - { name: busca, in: query, required: false, schema: { type: string } }
+        - { name: campus, in: query, required: false, schema: { $ref: '#/components/schemas/Campus' } }
+        - { name: categoria, in: query, required: false, schema: { $ref: '#/components/schemas/Categoria' } }
+        - { name: status, in: query, required: false, schema: { $ref: '#/components/schemas/StatusOportunidade' } }
+        - $ref: '#/components/parameters/Pagina'
+        - $ref: '#/components/parameters/Limite'
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ListaOportunidades' }
+        '400': { $ref: '#/components/responses/RequisicaoInvalida' }
+    post:
+      tags: [Oportunidades]
+      summary: Cadastrar oportunidade (ADMIN)
+      description: |
+        A oportunidade é sempre criada em RASCUNHO; o status não é definido pelo cliente.
+        A transição para PUBLICADA ocorre apenas pela SAGA de publicação.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OportunidadeCriacao' }
+      responses:
+        '201':
+          description: Recurso criado
+          headers:
+            Location:
+              description: URL do recurso criado
+              schema: { type: string }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Oportunidade' }
+        '400': { $ref: '#/components/responses/RequisicaoInvalida' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/AcessoNegado' }
+        '422': { $ref: '#/components/responses/RegraDeNegocio' }
+
+  /api/v1/oportunidades/{oportunidadeId}:
+    parameters:
+      - $ref: '#/components/parameters/OportunidadeIdPath'
+    get:
+      tags: [Oportunidades]
+      summary: Consultar oportunidade e links HATEOAS
+      security: []
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Oportunidade' }
+              example:
+                id: 550e8400-e29b-41d4-a716-446655440002
+                titulo: Workshop de Docker
+                descricao: Workshop prático de containers para a comunidade acadêmica.
+                categoria: EVENTO
+                campus: LAVRAS
+                dataInicio: '2026-11-12T14:00:00-03:00'
+                prazoInscricao: '2026-11-10T23:59:00-03:00'
+                fonteUrl: https://www.ufla.br/
+                tags: [tecnologia, containers]
+                status: PUBLICADA
+                origem: COLETA
+                _links:
+                  self: { href: /api/v1/oportunidades/550e8400-e29b-41d4-a716-446655440002, method: GET }
+                  colecao: { href: /api/v1/oportunidades, method: GET }
+                  salvar: { href: /api/v1/favoritos, method: POST }
+                  lembrar: { href: /api/v1/lembretes, method: POST }
+                  perguntar: { href: /api/v1/conversas, method: POST }
+                  fonteOficial: { href: 'https://www.ufla.br/', method: GET }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+    patch:
+      tags: [Oportunidades]
+      summary: Atualizar oportunidade (ADMIN)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OportunidadeAtualizacao' }
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Oportunidade' }
+        '400': { $ref: '#/components/responses/RequisicaoInvalida' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/AcessoNegado' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+        '422': { $ref: '#/components/responses/RegraDeNegocio' }
+    delete:
+      tags: [Oportunidades]
+      summary: Excluir oportunidade (ADMIN)
+      responses:
+        '204': { description: Removido sem conteúdo }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/AcessoNegado' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+
+  /api/v1/oportunidades/{oportunidadeId}/publicacao:
+    parameters:
+      - $ref: '#/components/parameters/OportunidadeIdPath'
+    post:
+      tags: [Oportunidades]
+      summary: Disparar a SAGA de publicação (ADMIN)
+      description: |
+        Processamento assíncrono. Responde 202 com um sagaId; o andamento é consultado em
+        GET /api/v1/publicacoes/{sagaId}.
+      responses:
+        '202':
+          description: Publicação aceita para processamento
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PublicacaoAceita' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/AcessoNegado' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+        '409':
+          description: A oportunidade não está em RASCUNHO
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Erro' }
+
+  /api/v1/publicacoes/{sagaId}:
+    parameters:
+      - { name: sagaId, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      tags: [Oportunidades]
+      summary: Consultar o estado da SAGA de publicação (ADMIN)
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EstadoPublicacao' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/AcessoNegado' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+
+  /api/v1/fontes:
+    get:
+      tags: [Coleta]
+      summary: Listar fontes de coleta (ADMIN)
+      parameters:
+        - $ref: '#/components/parameters/Pagina'
+        - $ref: '#/components/parameters/Limite'
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ListaFontes' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/AcessoNegado' }
+    post:
+      tags: [Coleta]
+      summary: Cadastrar fonte de coleta (ADMIN)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/FonteCriacao' }
+      responses:
+        '201':
+          description: Recurso criado
+          headers:
+            Location:
+              description: URL do recurso criado
+              schema: { type: string }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Fonte' }
+        '400': { $ref: '#/components/responses/RequisicaoInvalida' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/AcessoNegado' }
+        '409': { $ref: '#/components/responses/Conflito' }
+
+  /api/v1/execucoes:
+    get:
+      tags: [Coleta]
+      summary: Histórico de execuções do coletor (ADMIN)
+      parameters:
+        - { name: fonteId, in: query, required: false, schema: { type: string, format: uuid } }
+        - $ref: '#/components/parameters/Pagina'
+        - $ref: '#/components/parameters/Limite'
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ListaExecucoes' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/AcessoNegado' }
+
+  /api/v1/candidatos:
+    get:
+      tags: [Coleta]
+      summary: Fila de curadoria (ADMIN)
+      parameters:
+        - { name: status, in: query, required: false, schema: { $ref: '#/components/schemas/StatusCandidato' } }
+        - { name: fonteId, in: query, required: false, schema: { type: string, format: uuid } }
+        - $ref: '#/components/parameters/Pagina'
+        - $ref: '#/components/parameters/Limite'
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ListaCandidatos' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/AcessoNegado' }
+
+  /api/v1/candidatos/{candidatoId}:
+    parameters:
+      - { name: candidatoId, in: path, required: true, schema: { type: string, format: uuid } }
+    patch:
+      tags: [Coleta]
+      summary: Descartar candidato ou marcar como duplicado (ADMIN)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CandidatoAtualizacao' }
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Candidato' }
+        '400': { $ref: '#/components/responses/RequisicaoInvalida' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/AcessoNegado' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+
+  /api/v1/favoritos:
+    get:
+      tags: [Engajamento]
+      summary: Listar favoritos do usuário autenticado
+      parameters:
+        - $ref: '#/components/parameters/Pagina'
+        - $ref: '#/components/parameters/Limite'
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ListaFavoritos' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+    post:
+      tags: [Engajamento]
+      summary: Salvar oportunidade
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/FavoritoCriacao' }
+      responses:
+        '201':
+          description: Recurso criado
+          headers:
+            Location:
+              description: URL do recurso criado
+              schema: { type: string }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Favorito' }
+        '400': { $ref: '#/components/responses/RequisicaoInvalida' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+        '409': { $ref: '#/components/responses/Conflito' }
+
+  /api/v1/favoritos/{favoritoId}:
+    parameters:
+      - { name: favoritoId, in: path, required: true, schema: { type: string, format: uuid } }
+    delete:
+      tags: [Engajamento]
+      summary: Remover favorito
+      responses:
+        '204': { description: Removido sem conteúdo }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/AcessoNegado' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+
+  /api/v1/lembretes:
+    get:
+      tags: [Engajamento]
+      summary: Listar lembretes de prazo do usuário autenticado
+      parameters:
+        - $ref: '#/components/parameters/Pagina'
+        - $ref: '#/components/parameters/Limite'
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ListaLembretes' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+    post:
+      tags: [Engajamento]
+      summary: Criar lembrete de prazo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LembreteCriacao' }
+      responses:
+        '201':
+          description: Recurso criado
+          headers:
+            Location:
+              description: URL do recurso criado
+              schema: { type: string }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Lembrete' }
+        '400': { $ref: '#/components/responses/RequisicaoInvalida' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+        '409': { $ref: '#/components/responses/Conflito' }
+        '422': { $ref: '#/components/responses/RegraDeNegocio' }
+
+  /api/v1/lembretes/{lembreteId}:
+    parameters:
+      - { name: lembreteId, in: path, required: true, schema: { type: string, format: uuid } }
+    delete:
+      tags: [Engajamento]
+      summary: Remover lembrete
+      responses:
+        '204': { description: Removido sem conteúdo }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/AcessoNegado' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+
+  /api/v1/recomendacoes:
+    get:
+      tags: [Recomendações]
+      summary: Recomendações do usuário autenticado
+      description: A identidade vem do token; não há parâmetro usuarioId.
+      parameters:
+        - $ref: '#/components/parameters/Pagina'
+        - $ref: '#/components/parameters/Limite'
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ListaRecomendacoes' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+
+  /api/v1/notificacoes:
+    get:
+      tags: [Notificações]
+      summary: Listar notificações do usuário autenticado
+      parameters:
+        - { name: lida, in: query, required: false, schema: { type: boolean } }
+        - $ref: '#/components/parameters/Pagina'
+        - $ref: '#/components/parameters/Limite'
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ListaNotificacoes' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+
+  /api/v1/notificacoes/{notificacaoId}:
+    parameters:
+      - { name: notificacaoId, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      tags: [Notificações]
+      summary: Consultar notificação
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Notificacao' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/AcessoNegado' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+    patch:
+      tags: [Notificações]
+      summary: Marcar notificação como lida
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NotificacaoAtualizacao' }
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Notificacao' }
+        '400': { $ref: '#/components/responses/RequisicaoInvalida' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/AcessoNegado' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+
+  /api/v1/conversas:
+    post:
+      tags: [Assistente]
+      summary: Abrir conversa com o assistente de editais
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ConversaCriacao' }
+      responses:
+        '201':
+          description: Recurso criado
+          headers:
+            Location:
+              description: URL do recurso criado
+              schema: { type: string }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Conversa' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+
+  /api/v1/conversas/{conversaId}/mensagens:
+    parameters:
+      - { name: conversaId, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      tags: [Assistente]
+      summary: Enviar pergunta e obter resposta com citações
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MensagemCriacao' }
+      responses:
+        '201':
+          description: Resposta gerada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Mensagem' }
+        '400': { $ref: '#/components/responses/RequisicaoInvalida' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/AcessoNegado' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+        '429':
+          description: Limite de uso do assistente excedido
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Erro' }
+        '503':
+          description: Provedor de LLM indisponível; resposta degradada ou recusada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Erro' }
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    Pagina:
+      name: pagina
+      in: query
+      required: false
+      schema: { type: integer, minimum: 1, default: 1 }
+    Limite:
+      name: limite
+      in: query
+      required: false
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+    UsuarioIdPath:
+      name: usuarioId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    OportunidadeIdPath:
+      name: oportunidadeId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+
+  responses:
+    RequisicaoInvalida:
+      description: Requisição inválida
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Erro' }
+    NaoAutenticado:
+      description: Autenticação necessária
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Erro' }
+    AcessoNegado:
+      description: Acesso negado (papel insuficiente ou recurso de outro usuário)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Erro' }
+    NaoEncontrado:
+      description: Recurso não encontrado
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Erro' }
+    Conflito:
+      description: Conflito
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Erro' }
+    RegraDeNegocio:
+      description: Regra de negócio não atendida
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Erro' }
+
+  schemas:
+    Erro:
+      type: object
+      properties:
+        codigo: { type: string }
+        mensagem: { type: string }
+      required: [codigo, mensagem]
+
+    Campus:
+      type: string
+      enum: [LAVRAS, SAO_SEBASTIAO_DO_PARAISO]
+    Categoria:
+      type: string
+      enum: [EVENTO, ATIVIDADE, BOLSA, PROJETO, PROCESSO_SELETIVO]
+    StatusOportunidade:
+      type: string
+      enum: [RASCUNHO, PUBLICANDO, PUBLICADA, ENCERRADA]
+    Papel:
+      type: string
+      enum: [ESTUDANTE, ADMIN]
+    OrigemOportunidade:
+      type: string
+      enum: [COLETA, MANUAL]
+    StatusCandidato:
+      type: string
+      enum: [PENDENTE, CONSUMIDO, DESCARTADO, DUPLICADO]
+
+    Link:
+      type: object
+      properties:
+        href: { type: string, format: uri-reference }
+        method: { type: string, enum: [GET, POST, PATCH, DELETE] }
+      required: [href, method]
+
+    Credenciais:
+      type: object
+      properties:
+        email: { type: string, format: email }
+        senha: { type: string, format: password }
+      required: [email, senha]
+    Sessao:
+      type: object
+      properties:
+        token: { type: string }
+        expiraEm: { type: string, format: date-time }
+        papel: { $ref: '#/components/schemas/Papel' }
+      required: [token, expiraEm, papel]
+
+    UsuarioCriacao:
+      type: object
+      properties:
+        nome: { type: string }
+        email: { type: string, format: email }
+        senha: { type: string, format: password }
+        curso: { type: string }
+        campus: { $ref: '#/components/schemas/Campus' }
+        interesses:
+          type: array
+          items: { type: string }
+      required: [nome, email, senha, curso, campus]
+    UsuarioAtualizacao:
+      type: object
+      properties:
+        nome: { type: string }
+        curso: { type: string }
+        campus: { $ref: '#/components/schemas/Campus' }
+        interesses:
+          type: array
+          items: { type: string }
+    Usuario:
+      type: object
+      description: O papel é atribuído pela plataforma, nunca enviado pelo cliente.
+      properties:
+        id: { type: string, format: uuid }
+        nome: { type: string }
+        email: { type: string, format: email }
+        curso: { type: string }
+        campus: { $ref: '#/components/schemas/Campus' }
+        interesses:
+          type: array
+          items: { type: string }
+        papel: { $ref: '#/components/schemas/Papel' }
+      required: [id, nome, email, curso, campus, interesses, papel]
+
+    OportunidadeCriacao:
+      type: object
+      description: Sem campo status — a oportunidade nasce em RASCUNHO.
+      properties:
+        titulo: { type: string }
+        descricao: { type: string }
+        categoria: { $ref: '#/components/schemas/Categoria' }
+        campus: { $ref: '#/components/schemas/Campus' }
+        dataInicio: { type: string, format: date-time }
+        prazoInscricao: { type: string, format: date-time }
+        fonteUrl: { type: string, format: uri }
+        tags:
+          type: array
+          items: { type: string }
+        candidatoId:
+          type: string
+          format: uuid
+          description: Candidato da Coleta que originou a oportunidade; ausente no cadastro manual.
+      required: [titulo, categoria, campus, prazoInscricao, fonteUrl]
+    OportunidadeAtualizacao:
+      type: object
+      properties:
+        titulo: { type: string }
+        descricao: { type: string }
+        categoria: { $ref: '#/components/schemas/Categoria' }
+        campus: { $ref: '#/components/schemas/Campus' }
+        dataInicio: { type: string, format: date-time }
+        prazoInscricao: { type: string, format: date-time }
+        fonteUrl: { type: string, format: uri }
+        tags:
+          type: array
+          items: { type: string }
+    Oportunidade:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        titulo: { type: string }
+        descricao: { type: string }
+        categoria: { $ref: '#/components/schemas/Categoria' }
+        campus: { $ref: '#/components/schemas/Campus' }
+        dataInicio: { type: string, format: date-time }
+        prazoInscricao: { type: string, format: date-time }
+        fonteUrl: { type: string, format: uri }
+        tags:
+          type: array
+          items: { type: string }
+        status: { $ref: '#/components/schemas/StatusOportunidade' }
+        origem: { $ref: '#/components/schemas/OrigemOportunidade' }
+        _links:
+          type: object
+          description: Links dependentes do estado e do papel; `publicar` só para ADMIN em RASCUNHO.
+          additionalProperties: { $ref: '#/components/schemas/Link' }
+      required: [id, titulo, categoria, campus, prazoInscricao, fonteUrl, status, _links]
+
+    PublicacaoAceita:
+      type: object
+      properties:
+        sagaId: { type: string, format: uuid }
+        estado: { $ref: '#/components/schemas/EstadoSaga' }
+        _links:
+          type: object
+          additionalProperties: { $ref: '#/components/schemas/Link' }
+      required: [sagaId, estado]
+    EstadoSaga:
+      type: string
+      enum: [INICIADA, EM_ANDAMENTO, COMPENSANDO, COMPENSADA, CONCLUIDA, FALHA_COMPENSACAO]
+    PassoSaga:
+      type: object
+      properties:
+        passo:
+          type: string
+          enum: [CONSUMIR_CANDIDATO, INDEXAR_ASSISTENTE, AGENDAR_AVISOS, CONCLUIR_PUBLICACAO]
+        estado: { type: string, enum: [PENDENTE, OK, FALHA, COMPENSADO] }
+        detalhe: { type: string }
+        atualizadoEm: { type: string, format: date-time }
+      required: [passo, estado]
+    EstadoPublicacao:
+      type: object
+      properties:
+        sagaId: { type: string, format: uuid }
+        oportunidadeId: { type: string, format: uuid }
+        estado: { $ref: '#/components/schemas/EstadoSaga' }
+        passos:
+          type: array
+          items: { $ref: '#/components/schemas/PassoSaga' }
+        iniciadaEm: { type: string, format: date-time }
+        finalizadaEm: { type: string, format: date-time }
+      required: [sagaId, oportunidadeId, estado, passos, iniciadaEm]
+
+    FonteCriacao:
+      type: object
+      properties:
+        nome: { type: string }
+        url: { type: string, format: uri }
+        periodicidadeCron:
+          type: string
+          description: Expressão cron da execução do coletor.
+        ativa: { type: boolean, default: true }
+      required: [nome, url, periodicidadeCron]
+    Fonte:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        nome: { type: string }
+        url: { type: string, format: uri }
+        periodicidadeCron: { type: string }
+        ativa: { type: boolean }
+        ultimaExecucaoEm: { type: string, format: date-time }
+      required: [id, nome, url, periodicidadeCron, ativa]
+
+    Execucao:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        fonteId: { type: string, format: uuid }
+        iniciadaEm: { type: string, format: date-time }
+        finalizadaEm: { type: string, format: date-time }
+        estado: { type: string, enum: [EM_ANDAMENTO, CONCLUIDA, FALHA] }
+        itensEncontrados: { type: integer, minimum: 0 }
+        itensNovos: { type: integer, minimum: 0 }
+        itensDuplicados: { type: integer, minimum: 0 }
+      required: [id, fonteId, iniciadaEm, estado]
+
+    Candidato:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        fonteId: { type: string, format: uuid }
+        urlOrigem: { type: string, format: uri }
+        tituloExtraido: { type: string }
+        descricaoExtraida: { type: string }
+        dataExtraida: { type: string, format: date-time }
+        status: { $ref: '#/components/schemas/StatusCandidato' }
+        scoreDuplicidade: { type: number, minimum: 0, maximum: 1 }
+        coletadoEm: { type: string, format: date-time }
+      required: [id, fonteId, urlOrigem, status, coletadoEm]
+    CandidatoAtualizacao:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [DESCARTADO, DUPLICADO]
+        motivo: { type: string }
+      required: [status]
+
+    FavoritoCriacao:
+      type: object
+      properties:
+        oportunidadeId: { type: string, format: uuid }
+      required: [oportunidadeId]
+    Favorito:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        usuarioId: { type: string, format: uuid }
+        oportunidadeId: { type: string, format: uuid }
+        criadoEm: { type: string, format: date-time }
+      required: [id, usuarioId, oportunidadeId, criadoEm]
+
+    LembreteCriacao:
+      type: object
+      properties:
+        oportunidadeId: { type: string, format: uuid }
+        antecedenciaHoras:
+          type: integer
+          minimum: 1
+          maximum: 720
+          default: 48
+      required: [oportunidadeId]
+    Lembrete:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        usuarioId: { type: string, format: uuid }
+        oportunidadeId: { type: string, format: uuid }
+        antecedenciaHoras: { type: integer, minimum: 1, maximum: 720 }
+        dispararEm: { type: string, format: date-time }
+        criadoEm: { type: string, format: date-time }
+      required: [id, usuarioId, oportunidadeId, antecedenciaHoras, dispararEm, criadoEm]
+
+    Recomendacao:
+      type: object
+      properties:
+        oportunidadeId: { type: string, format: uuid }
+        pontuacao: { type: number, minimum: 0, maximum: 1 }
+        motivos:
+          type: array
+          items: { type: string }
+      required: [oportunidadeId, pontuacao, motivos]
+
+    Notificacao:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        usuarioId: { type: string, format: uuid }
+        oportunidadeId: { type: string, format: uuid }
+        tipo: { type: string, enum: [NOVA_OPORTUNIDADE, PRAZO_PROXIMO, OPORTUNIDADE_ALTERADA] }
+        titulo: { type: string }
+        mensagem: { type: string }
+        lida: { type: boolean }
+        criadaEm: { type: string, format: date-time }
+      required: [id, usuarioId, tipo, titulo, mensagem, lida, criadaEm]
+    NotificacaoAtualizacao:
+      type: object
+      properties:
+        lida: { type: boolean, enum: [true] }
+      required: [lida]
+
+    ConversaCriacao:
+      type: object
+      properties:
+        oportunidadeId:
+          type: string
+          format: uuid
+          description: Opcional; restringe a recuperação ao edital dessa oportunidade.
+    Conversa:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        usuarioId: { type: string, format: uuid }
+        oportunidadeId: { type: string, format: uuid }
+        criadaEm: { type: string, format: date-time }
+      required: [id, usuarioId, criadaEm]
+    MensagemCriacao:
+      type: object
+      properties:
+        pergunta: { type: string, maxLength: 2000 }
+      required: [pergunta]
+    Citacao:
+      type: object
+      properties:
+        oportunidadeId: { type: string, format: uuid }
+        trecho: { type: string }
+        fonteUrl: { type: string, format: uri }
+      required: [trecho]
+    Mensagem:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        conversaId: { type: string, format: uuid }
+        pergunta: { type: string }
+        resposta: { type: string }
+        citacoes:
+          type: array
+          items: { $ref: '#/components/schemas/Citacao' }
+        degradada:
+          type: boolean
+          description: true quando o LLM falhou e só os trechos recuperados foram devolvidos.
+        criadaEm: { type: string, format: date-time }
+      required: [id, conversaId, pergunta, resposta, citacoes, criadaEm]
+
+    ListaOportunidades:
+      type: object
+      properties:
+        itens:
+          type: array
+          items: { $ref: '#/components/schemas/Oportunidade' }
+        pagina: { type: integer, minimum: 1 }
+        limite: { type: integer, minimum: 1, maximum: 100 }
+        total: { type: integer, minimum: 0 }
+      required: [itens, pagina, limite, total]
+    ListaFontes:
+      type: object
+      properties:
+        itens:
+          type: array
+          items: { $ref: '#/components/schemas/Fonte' }
+        pagina: { type: integer, minimum: 1 }
+        limite: { type: integer, minimum: 1, maximum: 100 }
+        total: { type: integer, minimum: 0 }
+      required: [itens, pagina, limite, total]
+    ListaExecucoes:
+      type: object
+      properties:
+        itens:
+          type: array
+          items: { $ref: '#/components/schemas/Execucao' }
+        pagina: { type: integer, minimum: 1 }
+        limite: { type: integer, minimum: 1, maximum: 100 }
+        total: { type: integer, minimum: 0 }
+      required: [itens, pagina, limite, total]
+    ListaCandidatos:
+      type: object
+      properties:
+        itens:
+          type: array
+          items: { $ref: '#/components/schemas/Candidato' }
+        pagina: { type: integer, minimum: 1 }
+        limite: { type: integer, minimum: 1, maximum: 100 }
+        total: { type: integer, minimum: 0 }
+      required: [itens, pagina, limite, total]
+    ListaFavoritos:
+      type: object
+      properties:
+        itens:
+          type: array
+          items: { $ref: '#/components/schemas/Favorito' }
+        pagina: { type: integer, minimum: 1 }
+        limite: { type: integer, minimum: 1, maximum: 100 }
+        total: { type: integer, minimum: 0 }
+      required: [itens, pagina, limite, total]
+    ListaLembretes:
+      type: object
+      properties:
+        itens:
+          type: array
+          items: { $ref: '#/components/schemas/Lembrete' }
+        pagina: { type: integer, minimum: 1 }
+        limite: { type: integer, minimum: 1, maximum: 100 }
+        total: { type: integer, minimum: 0 }
+      required: [itens, pagina, limite, total]
+    ListaRecomendacoes:
+      type: object
+      properties:
+        itens:
+          type: array
+          items: { $ref: '#/components/schemas/Recomendacao' }
+        pagina: { type: integer, minimum: 1 }
+        limite: { type: integer, minimum: 1, maximum: 100 }
+        total: { type: integer, minimum: 0 }
+      required: [itens, pagina, limite, total]
+    ListaNotificacoes:
+      type: object
+      properties:
+        itens:
+          type: array
+          items: { $ref: '#/components/schemas/Notificacao' }
+        pagina: { type: integer, minimum: 1 }
+        limite: { type: integer, minimum: 1, maximum: 100 }
+        total: { type: integer, minimum: 0 }
+      required: [itens, pagina, limite, total]
