@@ -23,6 +23,11 @@ A proposta é facilitar a descoberta dessas oportunidades,
 funcionando como uma **camada complementar aos canais oficiais
 da universidade**.
 
+O ConectaU **não realiza inscrições**. Ao encontrar algo relevante,
+o usuário é levado ao **canal oficial da UFLA**, onde a participação
+é efetivada. A plataforma cuida da parte que hoje falha: descobrir
+a oportunidade certa a tempo.
+
 ---
 
 ## ❗ O problema
@@ -134,7 +139,23 @@ relevante para seu perfil.
 </p>
 
 O fluxo permite que o usuário encontre, filtre e acompanhe
-oportunidades relevantes até o momento da participação.
+oportunidades relevantes até o momento da participação — que acontece
+**no canal oficial**, por meio do link da publicação original.
+
+### Como as oportunidades entram na plataforma
+
+| Caminho | Como funciona |
+|---|---|
+| **Coleta automática** | Um coletor percorre periodicamente páginas públicas da UFLA, normaliza o que encontra, remove duplicados e coloca os resultados em uma fila de curadoria |
+| **Cadastro manual** | Quem deseja divulgar algo procura a equipe do ConectaU |
+
+Em ambos os casos, **a publicação é feita por um administrador da
+plataforma**: não existe cadastro aberto de oportunidades por usuários.
+Essa curadoria humana é o que impede divulgações falsas ou incorretas
+de chegarem à comunidade.
+
+Cada oportunidade publicada sempre aponta para a **fonte oficial**,
+preservando a origem da informação.
 
 O ConectaU **não substitui os canais oficiais da UFLA**.
 
@@ -172,7 +193,7 @@ O impacto poderá ser acompanhado por indicadores como:
 - quantidade de usuários participantes;
 - quantidade de oportunidades salvas;
 - distribuição de oportunidades visualizadas entre cursos e campi;
-- participação originada a partir da plataforma;
+- encaminhamentos da plataforma para os canais oficiais;
 - redução de relatos de descoberta tardia;
 - percepção dos usuários sobre a facilidade de encontrar oportunidades.
 
@@ -186,7 +207,10 @@ Em vez de acompanhar diversos canais separadamente, ele acessa o
 ConectaU e encontra oportunidades relacionadas aos seus interesses.
 
 Ele pode filtrar as oportunidades, salvar aquelas que considera
-relevantes e acompanhar seus prazos.
+relevantes e criar lembretes para não perder os prazos.
+
+Ao decidir participar, ele abre o **link da fonte oficial** e conclui
+a inscrição no canal da UFLA.
 
 Assim, uma oportunidade que poderia passar despercebida pode ser
 encontrada pelo estudante no momento adequado.
@@ -204,6 +228,26 @@ encontrada pelo estudante no momento adequado.
 > **Uma plataforma que reúne e personaliza oportunidades da UFLA para
 > que cada membro da comunidade encontre o que é relevante para ele
 > antes que o prazo acabe.**
+
+---
+
+## 🏗️ Documentação de arquitetura
+
+A arquitetura proposta para a Parte 2 da disciplina está em
+[`docs/arquitetura/`](docs/arquitetura/):
+
+| Item | Documento |
+|---|---|
+| 4.1 — Decomposição em microsserviços | [`4.1-microsservicos.md`](docs/arquitetura/4.1-microsservicos.md) |
+| 4.2 — API REST e HATEOAS | [`4.2-api-rest.md`](docs/arquitetura/4.2-api-rest.md) · [`openapi.yaml`](docs/arquitetura/openapi.yaml) |
+| 4.3 — API Gateway | [`4.3-gateway.md`](docs/arquitetura/4.3-gateway.md) |
+| 4.4 — Backend for Frontend | [`4.4-bff.md`](docs/arquitetura/4.4-bff.md) |
+| 4.5 — Dados, consistência e outbox | [`4.5-dados-outbox.md`](docs/arquitetura/4.5-dados-outbox.md) |
+| 4.6 — SAGA de publicação | [`4.6-saga.md`](docs/arquitetura/4.6-saga.md) |
+| 4.7 — CQRS | [`4.7-cqrs.md`](docs/arquitetura/4.7-cqrs.md) |
+
+> Os documentos descrevem uma **proposta arquitetural**; nenhum serviço
+> está implementado neste repositório.
 
 ---
 
