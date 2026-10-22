@@ -24,7 +24,7 @@ funcionando como uma **camada complementar aos canais oficiais
 da universidade**.
 
 O ConectaU **não realiza inscrições**. Ao encontrar algo relevante,
-o usuário é levado ao **canal oficial da UFLA**, onde a participação
+o usuário é levado ao **canal oficial responsável pela oportunidade** (da UFLA, quando aplicável), onde a participação
 é efetivada. A plataforma cuida da parte que hoje falha: descobrir
 a oportunidade certa a tempo.
 

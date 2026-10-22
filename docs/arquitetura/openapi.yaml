@@ -212,6 +212,32 @@ paths:
         '403': { $ref: '#/components/responses/AcessoNegado' }
         '404': { $ref: '#/components/responses/NaoEncontrado' }
 
+  /api/v1/oportunidades/{oportunidadeId}/encerramento:
+    parameters:
+      - $ref: '#/components/parameters/OportunidadeIdPath'
+    post:
+      tags: [Oportunidades]
+      summary: Encerrar oportunidade publicada (ADMIN)
+      description: |
+        Encerra uma oportunidade que esteja em PUBLICADA. A alteração de estado e o evento
+        OportunidadeEncerrada são registrados de forma consistente; este fluxo é separado
+        da SAGA de publicação e não representa uma compensação da publicação.
+      responses:
+        '200':
+          description: Oportunidade encerrada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Oportunidade' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/AcessoNegado' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+        '409':
+          description: A oportunidade não está em PUBLICADA
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Erro' }
+        '422': { $ref: '#/components/responses/RegraDeNegocio' }
+
   /api/v1/oportunidades/{oportunidadeId}/publicacao:
     parameters:
       - $ref: '#/components/parameters/OportunidadeIdPath'
