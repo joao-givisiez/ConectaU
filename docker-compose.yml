@@ -1,0 +1,41 @@
+﻿services:
+  identidade:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: conectau-identidade
+    environment:
+      NODE_ENV: production
+      PORT: 3101
+    ports:
+      - "3101:3101"
+    networks:
+      - rede-aplicacao
+      - rede-dados
+    restart: unless-stopped
+
+  postgres:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/postgres/Dockerfile
+    container_name: conectau-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - rede-dados
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  rede-aplicacao:
+    driver: bridge
+
+  rede-dados:
+    driver: bridge
+    internal: true

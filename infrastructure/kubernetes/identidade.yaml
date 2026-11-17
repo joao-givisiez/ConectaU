@@ -1,0 +1,49 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: identidade
+  namespace: conectau
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: identidade
+  template:
+    metadata:
+      labels:
+        app: identidade
+    spec:
+      containers:
+        - name: identidade
+          image: conectau-identidade:1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3101
+          envFrom:
+            - configMapRef:
+                name: conectau-config
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3101
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3101
+            initialDelaySeconds: 10
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: identidade
+  namespace: conectau
+spec:
+  selector:
+    app: identidade
+  ports:
+    - port: 3101
+      targetPort: 3101
+  type: ClusterIP
