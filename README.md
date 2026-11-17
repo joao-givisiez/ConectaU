@@ -246,8 +246,139 @@ A arquitetura proposta para a Parte 2 da disciplina está em
 | 4.6 — SAGA de publicação | [`4.6-saga.md`](docs/arquitetura/4.6-saga.md) |
 | 4.7 — CQRS | [`4.7-cqrs.md`](docs/arquitetura/4.7-cqrs.md) |
 
-> Os documentos descrevem uma **proposta arquitetural**; nenhum serviço
-> está implementado neste repositório.
+> Os documentos descrevem a proposta arquitetural da Parte 2. Na Parte 3,
+> foi implementado o serviço de identidade, acompanhado de sua infraestrutura
+> de conteinerização e orquestração com Docker, Docker Compose e Kubernetes.
+
+---
+
+## 🚀 Execução e infraestrutura
+
+A Parte 3 do projeto contempla a conteinerização do serviço de identidade e do banco de dados PostgreSQL, além da orquestração desses componentes utilizando Docker, Docker Compose e Kubernetes.
+
+### Tecnologias utilizadas
+
+- **Docker:** construção das imagens dos serviços.
+- **Docker Compose:** execução integrada dos containers, com redes separadas por camada e volume persistente para o PostgreSQL.
+- **Kubernetes:** gerenciamento dos Pods, Deployments, Services, ConfigMap, Secret, PersistentVolumeClaim e Ingress.
+- **Traefik:** controlador de Ingress utilizado para direcionar as requisições ao serviço de identidade.
+
+### Execução com Docker Compose
+
+Pré-requisitos: Docker Desktop e Docker Compose.
+
+1. Crie o arquivo de variáveis de ambiente:
+
+   ```powershell
+   Copy-Item .env.example .env
+   ```
+
+2. Configure as credenciais no arquivo `.env`.
+
+3. Construa as imagens e inicie os serviços:
+
+   ```powershell
+   docker compose up -d --build
+   ```
+
+4. Verifique os containers:
+
+   ```powershell
+   docker compose ps
+   ```
+
+5. Teste o serviço de identidade:
+
+   ```powershell
+   Invoke-RestMethod http://localhost:3101/health
+   ```
+
+Para encerrar os containers:
+
+```powershell
+docker compose down
+```
+
+O volume nomeado do PostgreSQL é preservado ao encerrar os containers com esse comando.
+
+### Orquestração com Kubernetes
+
+Pré-requisitos: Docker Desktop com Kubernetes habilitado, `kubectl` configurado e controlador Traefik instalado no cluster.
+
+Construa as imagens utilizadas pelos manifests:
+
+```powershell
+docker build -t conectau-identidade:1.0 -f Dockerfile .
+docker build -t conectau-postgres:latest -f infrastructure/docker/postgres/Dockerfile .
+```
+
+Configure o Secret local a partir do exemplo:
+
+```powershell
+Copy-Item infrastructure/kubernetes/secret.example.yaml infrastructure/kubernetes/secret.yaml
+```
+
+Edite o arquivo `secret.yaml` com as credenciais desejadas. Esse arquivo contém credenciais locais e é ignorado pelo Git; apenas o arquivo `secret.example.yaml`, com valores ilustrativos, é versionado no repositório.
+
+Aplique os manifests:
+
+```powershell
+kubectl apply -f infrastructure/kubernetes/namespace.yaml
+kubectl apply -f infrastructure/kubernetes/secret.yaml
+kubectl apply -f infrastructure/kubernetes/configmap.yaml
+kubectl apply -f infrastructure/kubernetes/postgres.yaml
+kubectl apply -f infrastructure/kubernetes/identidade.yaml
+kubectl apply -f infrastructure/kubernetes/ingress.yaml
+```
+
+Verifique os recursos:
+
+```powershell
+kubectl get all -n conectau
+kubectl get pvc -n conectau
+kubectl get ingress -n conectau
+```
+
+### Acesso ao serviço pelo Ingress
+
+Com o Traefik em execução, abra um terminal e execute:
+
+```powershell
+kubectl port-forward -n traefik service/traefik 8080:80
+```
+
+Em outro terminal, teste o acesso:
+
+```powershell
+Invoke-RestMethod -Uri http://localhost:8080/health -Headers @{ Host = "conectau.local" }
+```
+
+### Demonstração de escalabilidade
+
+Para aumentar o número de réplicas do serviço de identidade:
+
+```powershell
+kubectl scale deployment identidade -n conectau --replicas=3
+```
+
+Verifique os Pods:
+
+```powershell
+kubectl get pods -n conectau
+```
+
+Para retornar à configuração inicial:
+
+```powershell
+kubectl scale deployment identidade -n conectau --replicas=1
+```
+
+### Persistência de dados
+
+A persistência do PostgreSQL foi verificada nos dois ambientes:
+
+- **Docker Compose:** os dados permaneceram disponíveis após a reinicialização do container, utilizando volume nomeado.
+- **Kubernetes:** os dados permaneceram disponíveis após a recriação do Pod PostgreSQL, utilizando PersistentVolumeClaim.
 
 ---
 
