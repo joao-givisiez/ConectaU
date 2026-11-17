@@ -256,6 +256,8 @@ A arquitetura proposta para a Parte 2 da disciplina está em
 
 A Parte 3 do projeto contempla a conteinerização do serviço de identidade e do banco de dados PostgreSQL, além da orquestração desses componentes utilizando Docker, Docker Compose e Kubernetes.
 
+> 🎥 **Vídeo da entrega 3:** [assista à apresentação no Google Drive](https://drive.google.com/drive/folders/1_DyPLt6FhXqFV3msJlyv8K-zaNSfAilI?usp=sharing)
+
 ### Tecnologias utilizadas
 
 - **Docker:** construção das imagens dos serviços.
