@@ -1,32 +1,34 @@
 openapi: 3.0.3
 info:
   title: ConectaU — Contrato de APIs REST
-  version: 2.0.0
+  version: 3.0.0
   description: |
-    Contrato arquitetural proposto para a Parte 2 (itens 4.1 e 4.2). Não implica endpoints implementados.
+    Contrato da arquitetura revisada (5 serviços de domínio: Identidade, Coleta, Oportunidades,
+    Engajamento e Assistente). Não implica endpoints implementados.
 
     Papéis: ESTUDANTE (comunidade) e ADMIN. Não existe papel de publicador — toda escrita no
-    catálogo de oportunidades é exclusiva de ADMIN.
+    catálogo de oportunidades e na fila de curadoria é exclusiva de ADMIN.
 
     O ConectaU é uma camada de descoberta: a inscrição acontece no canal oficial, pelo link
     `fonteOficial`. Por isso não há recursos de inscrição nem de vagas.
 
-    Recursos pessoais (favoritos, lembretes, recomendações, notificações, conversas) usam sempre a
-    identidade do token; `usuarioId` não é aceito em query.
+    Recursos pessoais (favoritos, lembretes, notificações, conversas) usam sempre a identidade
+    do token; `usuarioId` não é aceito em query.
 
-    Rotas /internal/** (comandos da SAGA e tools do assistente) não são expostas no gateway e,
-    portanto, não constam deste contrato.
+    Rotas /internal/** (comandos da SAGA e verificação de token pelo gateway) estão sob a tag
+    Interno. Elas exigem o cabeçalho X-Token-Servico e não são roteadas pelo gateway.
 servers:
   - url: https://api.conectau.example
     description: Host fictício, apenas para documentação
 tags:
   - name: Identidade
-  - name: Oportunidades
   - name: Coleta
+  - name: Oportunidades
   - name: Engajamento
-  - name: Recomendações
-  - name: Notificações
+    description: Favoritos, lembretes de prazo e avisos in-app
   - name: Assistente
+  - name: Interno
+    description: Rotas internas (SAGA e gateway). Não expostas fora do cluster.
 
 paths:
   /api/v1/usuarios:
@@ -109,13 +111,29 @@ paths:
   /api/v1/oportunidades:
     get:
       tags: [Oportunidades]
-      summary: Listar oportunidades (modelo de leitura)
+      summary: Listar oportunidades publicadas (modelo de leitura)
+      description: |
+        Sem `status`: consulta o modelo de leitura do CQRS, que contém apenas oportunidades em PUBLICADA.
+        Com `status`: exclusivo de ADMIN; consulta o modelo de escrita (curadoria). Para outros papéis, 403.
       security: []
       parameters:
+        - name: status
+          in: query
+          required: false
+          description: Somente ADMIN. Lista oportunidades do modelo de escrita neste status.
+          schema: { $ref: '#/components/schemas/StatusOportunidade' }
         - { name: busca, in: query, required: false, schema: { type: string } }
         - { name: campus, in: query, required: false, schema: { $ref: '#/components/schemas/Campus' } }
         - { name: categoria, in: query, required: false, schema: { $ref: '#/components/schemas/Categoria' } }
-        - { name: status, in: query, required: false, schema: { $ref: '#/components/schemas/StatusOportunidade' } }
+        - name: tags
+          in: query
+          required: false
+          description: Uma ou mais tags de interesse; usada pelo BFF Web para filtrar o feed pelo perfil.
+          style: form
+          explode: false
+          schema:
+            type: array
+            items: { type: string }
         - $ref: '#/components/parameters/Pagina'
         - $ref: '#/components/parameters/Limite'
       responses:
@@ -127,10 +145,11 @@ paths:
         '400': { $ref: '#/components/responses/RequisicaoInvalida' }
     post:
       tags: [Oportunidades]
-      summary: Cadastrar oportunidade (ADMIN)
+      summary: Cadastrar oportunidade a partir de um candidato (ADMIN)
       description: |
         A oportunidade é sempre criada em RASCUNHO; o status não é definido pelo cliente.
         A transição para PUBLICADA ocorre apenas pela SAGA de publicação.
+        Toda oportunidade nasce de um candidato PENDENTE da Coleta, inclusive no cadastro manual.
       requestBody:
         required: true
         content:
@@ -149,6 +168,11 @@ paths:
         '400': { $ref: '#/components/responses/RequisicaoInvalida' }
         '401': { $ref: '#/components/responses/NaoAutenticado' }
         '403': { $ref: '#/components/responses/AcessoNegado' }
+        '409':
+          description: O candidato informado não está PENDENTE
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Erro' }
         '422': { $ref: '#/components/responses/RegraDeNegocio' }
 
   /api/v1/oportunidades/{oportunidadeId}:
@@ -332,6 +356,28 @@ paths:
               schema: { $ref: '#/components/schemas/ListaExecucoes' }
         '401': { $ref: '#/components/responses/NaoAutenticado' }
         '403': { $ref: '#/components/responses/AcessoNegado' }
+    post:
+      tags: [Coleta]
+      summary: Executar a coleta de uma fonte agora (ADMIN)
+      description: Dispara a coleta sem esperar o agendamento; itens duplicados são descartados pelo hash de título e data.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fonteId: { type: string, format: uuid }
+              required: [fonteId]
+      responses:
+        '201':
+          description: Execução concluída (com sucesso ou falha registrada)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Execucao' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/AcessoNegado' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
 
   /api/v1/candidatos:
     get:
@@ -339,6 +385,7 @@ paths:
       summary: Fila de curadoria (ADMIN)
       parameters:
         - { name: status, in: query, required: false, schema: { $ref: '#/components/schemas/StatusCandidato' } }
+        - { name: origem, in: query, required: false, schema: { $ref: '#/components/schemas/OrigemOportunidade' } }
         - { name: fonteId, in: query, required: false, schema: { type: string, format: uuid } }
         - $ref: '#/components/parameters/Pagina'
         - $ref: '#/components/parameters/Limite'
@@ -350,10 +397,46 @@ paths:
               schema: { $ref: '#/components/schemas/ListaCandidatos' }
         '401': { $ref: '#/components/responses/NaoAutenticado' }
         '403': { $ref: '#/components/responses/AcessoNegado' }
+    post:
+      tags: [Coleta]
+      summary: Cadastro manual de candidato (ADMIN)
+      description: |
+        Usado quando alguém procura a equipe do ConectaU para divulgar uma oportunidade.
+        O candidato nasce PENDENTE com origem MANUAL e segue a mesma curadoria da coleta automática.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CandidatoCriacao' }
+      responses:
+        '201':
+          description: Recurso criado
+          headers:
+            Location:
+              description: URL do recurso criado
+              schema: { type: string }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Candidato' }
+        '400': { $ref: '#/components/responses/RequisicaoInvalida' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/AcessoNegado' }
 
   /api/v1/candidatos/{candidatoId}:
     parameters:
       - { name: candidatoId, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      tags: [Coleta]
+      summary: Consultar candidato (ADMIN)
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Candidato' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/AcessoNegado' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
     patch:
       tags: [Coleta]
       summary: Descartar candidato ou marcar como duplicado (ADMIN)
@@ -472,26 +555,10 @@ paths:
         '403': { $ref: '#/components/responses/AcessoNegado' }
         '404': { $ref: '#/components/responses/NaoEncontrado' }
 
-  /api/v1/recomendacoes:
-    get:
-      tags: [Recomendações]
-      summary: Recomendações do usuário autenticado
-      description: A identidade vem do token; não há parâmetro usuarioId.
-      parameters:
-        - $ref: '#/components/parameters/Pagina'
-        - $ref: '#/components/parameters/Limite'
-      responses:
-        '200':
-          description: Operação concluída
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/ListaRecomendacoes' }
-        '401': { $ref: '#/components/responses/NaoAutenticado' }
-
   /api/v1/notificacoes:
     get:
-      tags: [Notificações]
-      summary: Listar notificações do usuário autenticado
+      tags: [Engajamento]
+      summary: Listar avisos in-app do usuário autenticado
       parameters:
         - { name: lida, in: query, required: false, schema: { type: boolean } }
         - $ref: '#/components/parameters/Pagina'
@@ -508,8 +575,8 @@ paths:
     parameters:
       - { name: notificacaoId, in: path, required: true, schema: { type: string, format: uuid } }
     get:
-      tags: [Notificações]
-      summary: Consultar notificação
+      tags: [Engajamento]
+      summary: Consultar aviso
       responses:
         '200':
           description: Operação concluída
@@ -520,8 +587,8 @@ paths:
         '403': { $ref: '#/components/responses/AcessoNegado' }
         '404': { $ref: '#/components/responses/NaoEncontrado' }
     patch:
-      tags: [Notificações]
-      summary: Marcar notificação como lida
+      tags: [Engajamento]
+      summary: Marcar aviso como lido
       requestBody:
         required: true
         content:
@@ -587,10 +654,140 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Erro' }
         '503':
-          description: Provedor de LLM indisponível; resposta degradada ou recusada
+          description: Provedor de LLM e recuperação indisponíveis; sem resposta possível
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Erro' }
+
+  /internal/autenticacao:
+    get:
+      tags: [Interno]
+      summary: Verificar JWT para o gateway (ForwardAuth)
+      description: |
+        Chamado pelo Traefik antes de encaminhar a requisição. Sem token, responde 200 sem
+        cabeçalhos de usuário (acesso anônimo). Com token válido, devolve a identidade nos
+        cabeçalhos de resposta, que o gateway repassa ao BFF.
+      security: []
+      parameters:
+        - name: papel
+          in: query
+          required: false
+          description: Papel exigido pela rota (usado em /admin/**).
+          schema: { $ref: '#/components/schemas/Papel' }
+      responses:
+        '200':
+          description: Token válido ou ausente
+          headers:
+            X-Usuario-Id:
+              description: sub do token
+              schema: { type: string, format: uuid }
+            X-Usuario-Papel:
+              schema: { $ref: '#/components/schemas/Papel' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/AcessoNegado' }
+
+  /internal/candidatos/{candidatoId}:
+    parameters:
+      - { name: candidatoId, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      tags: [Interno]
+      summary: Consultar candidato para validar o cadastro de uma oportunidade (Coleta)
+      security:
+        - tokenServico: []
+      responses:
+        '200':
+          description: Operação concluída
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Candidato' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+
+  /internal/candidatos/{candidatoId}/consumo:
+    parameters:
+      - { name: candidatoId, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      tags: [Interno]
+      summary: "SAGA, passo 2: consumir candidato (Coleta)"
+      description: Idempotente por sagaId. Repetir com o mesmo sagaId devolve 200 sem novo efeito.
+      security:
+        - tokenServico: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ComandoSaga' }
+      responses:
+        '200':
+          description: Candidato em CONSUMIDO
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Candidato' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+        '409':
+          description: Candidato já consumido por outra SAGA, descartado ou duplicado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Erro' }
+
+  /internal/candidatos/{candidatoId}/liberacao:
+    parameters:
+      - { name: candidatoId, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      tags: [Interno]
+      summary: "SAGA, compensação do passo 2: liberar candidato (Coleta)"
+      description: Volta o candidato para PENDENTE se ele foi consumido por este sagaId. Idempotente.
+      security:
+        - tokenServico: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ComandoSaga' }
+      responses:
+        '200':
+          description: Candidato em PENDENTE
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Candidato' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+
+  /internal/indexacoes/{oportunidadeId}:
+    parameters:
+      - $ref: '#/components/parameters/OportunidadeIdPath'
+    put:
+      tags: [Interno]
+      summary: "SAGA, passo 3: indexar oportunidade no Assistente"
+      description: |
+        Gera chunks e embeddings do texto e substitui o índice da oportunidade numa única
+        transação. Idempotente: repetir substitui pelo mesmo conteúdo.
+      security:
+        - tokenServico: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/IndexacaoComando' }
+      responses:
+        '200':
+          description: Oportunidade indexada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/IndexacaoResultado' }
+        '400': { $ref: '#/components/responses/RequisicaoInvalida' }
+        '503':
+          description: Provedor de embeddings indisponível; nada foi gravado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Erro' }
+    delete:
+      tags: [Interno]
+      summary: "SAGA, compensação do passo 3: remover chunks da oportunidade"
+      description: Idempotente; remover uma indexação inexistente também responde 204.
+      security:
+        - tokenServico: []
+      responses:
+        '204': { description: Chunks removidos }
 
 security:
   - bearerAuth: []
@@ -601,6 +798,11 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+    tokenServico:
+      type: apiKey
+      in: header
+      name: X-Token-Servico
+      description: Segredo compartilhado entre serviços internos, entregue por Secret do Kubernetes.
 
   parameters:
     Pagina:
@@ -744,6 +946,10 @@ components:
       type: object
       description: Sem campo status — a oportunidade nasce em RASCUNHO.
       properties:
+        candidatoId:
+          type: string
+          format: uuid
+          description: Candidato PENDENTE da Coleta que originou a oportunidade (automático ou manual).
         titulo: { type: string }
         descricao: { type: string }
         categoria: { $ref: '#/components/schemas/Categoria' }
@@ -754,11 +960,7 @@ components:
         tags:
           type: array
           items: { type: string }
-        candidatoId:
-          type: string
-          format: uuid
-          description: Candidato da Coleta que originou a oportunidade; ausente no cadastro manual.
-      required: [titulo, categoria, campus, prazoInscricao, fonteUrl]
+      required: [candidatoId, titulo, categoria, campus, prazoInscricao, fonteUrl]
     OportunidadeAtualizacao:
       type: object
       properties:
@@ -788,6 +990,7 @@ components:
           items: { type: string }
         status: { $ref: '#/components/schemas/StatusOportunidade' }
         origem: { $ref: '#/components/schemas/OrigemOportunidade' }
+        candidatoId: { type: string, format: uuid }
         _links:
           type: object
           description: Links dependentes do estado e do papel; `publicar` só para ADMIN em RASCUNHO.
@@ -811,7 +1014,7 @@ components:
       properties:
         passo:
           type: string
-          enum: [CONSUMIR_CANDIDATO, INDEXAR_ASSISTENTE, AGENDAR_AVISOS, CONCLUIR_PUBLICACAO]
+          enum: [CONSUMIR_CANDIDATO, INDEXAR_ASSISTENTE, CONCLUIR_PUBLICACAO]
         estado: { type: string, enum: [PENDENTE, OK, FALHA, COMPENSADO] }
         detalhe: { type: string }
         atualizadoEm: { type: string, format: date-time }
@@ -828,6 +1031,31 @@ components:
         iniciadaEm: { type: string, format: date-time }
         finalizadaEm: { type: string, format: date-time }
       required: [sagaId, oportunidadeId, estado, passos, iniciadaEm]
+
+    ComandoSaga:
+      type: object
+      description: Corpo comum dos comandos internos da SAGA; o sagaId garante a idempotência.
+      properties:
+        sagaId: { type: string, format: uuid }
+        oportunidadeId: { type: string, format: uuid }
+      required: [sagaId]
+    IndexacaoComando:
+      type: object
+      properties:
+        sagaId: { type: string, format: uuid }
+        titulo: { type: string }
+        texto:
+          type: string
+          description: Descrição e conteúdo do edital a indexar.
+        fonteUrl: { type: string, format: uri }
+      required: [sagaId, titulo, texto]
+    IndexacaoResultado:
+      type: object
+      properties:
+        oportunidadeId: { type: string, format: uuid }
+        sagaId: { type: string, format: uuid }
+        chunks: { type: integer, minimum: 0 }
+      required: [oportunidadeId, sagaId, chunks]
 
     FonteCriacao:
       type: object
@@ -863,19 +1091,42 @@ components:
         itensDuplicados: { type: integer, minimum: 0 }
       required: [id, fonteId, iniciadaEm, estado]
 
+    CandidatoCriacao:
+      type: object
+      description: Cadastro manual feito por um ADMIN; origem MANUAL e status PENDENTE são definidos pelo servidor.
+      properties:
+        urlOrigem:
+          type: string
+          format: uri
+          description: Canal oficial da oportunidade.
+        titulo: { type: string }
+        descricao: { type: string }
+        data: { type: string, format: date-time }
+        solicitante:
+          type: string
+          description: Quem pediu a divulgação (ex. nome do grupo ou setor).
+      required: [urlOrigem, titulo]
     Candidato:
       type: object
       properties:
         id: { type: string, format: uuid }
-        fonteId: { type: string, format: uuid }
+        origem: { $ref: '#/components/schemas/OrigemOportunidade' }
+        fonteId:
+          type: string
+          format: uuid
+          description: Presente apenas quando a origem é COLETA.
         urlOrigem: { type: string, format: uri }
         tituloExtraido: { type: string }
         descricaoExtraida: { type: string }
         dataExtraida: { type: string, format: date-time }
         status: { $ref: '#/components/schemas/StatusCandidato' }
+        sagaId:
+          type: string
+          format: uuid
+          description: SAGA que consumiu o candidato, quando status = CONSUMIDO.
         scoreDuplicidade: { type: number, minimum: 0, maximum: 1 }
         coletadoEm: { type: string, format: date-time }
-      required: [id, fonteId, urlOrigem, status, coletadoEm]
+      required: [id, origem, urlOrigem, status, coletadoEm]
     CandidatoAtualizacao:
       type: object
       properties:
@@ -920,23 +1171,14 @@ components:
         criadoEm: { type: string, format: date-time }
       required: [id, usuarioId, oportunidadeId, antecedenciaHoras, dispararEm, criadoEm]
 
-    Recomendacao:
-      type: object
-      properties:
-        oportunidadeId: { type: string, format: uuid }
-        pontuacao: { type: number, minimum: 0, maximum: 1 }
-        motivos:
-          type: array
-          items: { type: string }
-      required: [oportunidadeId, pontuacao, motivos]
-
     Notificacao:
       type: object
+      description: Aviso in-app gerado pelo Engajamento a partir de favoritos e lembretes.
       properties:
         id: { type: string, format: uuid }
         usuarioId: { type: string, format: uuid }
         oportunidadeId: { type: string, format: uuid }
-        tipo: { type: string, enum: [NOVA_OPORTUNIDADE, PRAZO_PROXIMO, OPORTUNIDADE_ALTERADA] }
+        tipo: { type: string, enum: [PRAZO_PROXIMO, OPORTUNIDADE_ALTERADA, OPORTUNIDADE_ENCERRADA] }
         titulo: { type: string }
         mensagem: { type: string }
         lida: { type: boolean }
@@ -1047,16 +1289,6 @@ components:
         itens:
           type: array
           items: { $ref: '#/components/schemas/Lembrete' }
-        pagina: { type: integer, minimum: 1 }
-        limite: { type: integer, minimum: 1, maximum: 100 }
-        total: { type: integer, minimum: 0 }
-      required: [itens, pagina, limite, total]
-    ListaRecomendacoes:
-      type: object
-      properties:
-        itens:
-          type: array
-          items: { $ref: '#/components/schemas/Recomendacao' }
         pagina: { type: integer, minimum: 1 }
         limite: { type: integer, minimum: 1, maximum: 100 }
         total: { type: integer, minimum: 0 }
