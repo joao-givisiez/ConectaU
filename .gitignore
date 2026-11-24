@@ -8,3 +8,7 @@ coverage/
 *.log
 
 infrastructure/kubernetes/secret.yaml
+infrastructure/kubernetes/segredos.env
+
+# Enunciado da disciplina (material do professor, nao versionar)
+GCC129-trabalho-pratico.pdf
