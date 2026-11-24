@@ -1,0 +1,211 @@
+# Entrada do ConectaU no Kubernetes: o Traefik do cluster faz o papel de API Gateway.
+# As regras espelham o gateway do Docker Compose (infrastructure/docker/gateway/dinamico.yml)
+# e o documento docs/arquitetura/4.3-gateway.md.
+#
+#   /auth/usuarios, /auth/sessoes → Identidade   (reescrito para /api/v1/...)
+#   /web/**                       → BFF Web      (token validado pela Identidade, se enviado)
+#   /web/conversas/**             → BFF Web      (limite mais restrito; o Traefik prioriza o caminho mais longo)
+#   /admin/**                     → BFF Admin    (exige papel ADMIN)
+#   /painel/**                    → Painel Admin
+#   /                             → Portal Web
+#   /internal/**                  → sem rota
+
+# ---------------------------------------------------------------- Middlewares (Traefik)
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: verificar-token
+spec:
+  forwardAuth:
+    address: http://identidade.conectau.svc.cluster.local:3101/internal/autenticacao
+    authResponseHeaders: [X-Usuario-Id, X-Usuario-Papel]
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: verificar-token-admin
+spec:
+  forwardAuth:
+    address: http://identidade.conectau.svc.cluster.local:3101/internal/autenticacao?papel=ADMIN
+    authResponseHeaders: [X-Usuario-Id, X-Usuario-Papel]
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: limite-geral
+spec:
+  rateLimit:
+    average: 50
+    burst: 100
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: limite-assistente
+spec:
+  rateLimit:
+    average: 10
+    period: 1m
+    burst: 5
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: auth-para-api
+spec:
+  replacePathRegex:
+    regex: ^/auth/(.*)
+    replacement: /api/v1/$1
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: sem-prefixo-web
+spec:
+  stripPrefix:
+    prefixes: [/web]
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: sem-prefixo-admin
+spec:
+  stripPrefix:
+    prefixes: [/admin]
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: sem-prefixo-painel
+spec:
+  stripPrefix:
+    prefixes: [/painel]
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: painel-com-barra
+spec:
+  redirectRegex:
+    regex: ^(https?://[^/]+/painel)$
+    replacement: ${1}/
+# ---------------------------------------------------------------- Ingress (um por conjunto de middlewares)
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: autenticacao
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: conectau-limite-geral@kubernetescrd,conectau-auth-para-api@kubernetescrd
+spec:
+  ingressClassName: traefik
+  rules:
+    - http:
+        paths:
+          - path: /auth/usuarios
+            pathType: Exact
+            backend:
+              service:
+                name: identidade
+                port:
+                  number: 3101
+          - path: /auth/sessoes
+            pathType: Exact
+            backend:
+              service:
+                name: identidade
+                port:
+                  number: 3101
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: web
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: conectau-verificar-token@kubernetescrd,conectau-limite-geral@kubernetescrd,conectau-sem-prefixo-web@kubernetescrd
+spec:
+  ingressClassName: traefik
+  rules:
+    - http:
+        paths:
+          - path: /web
+            pathType: Prefix
+            backend:
+              service:
+                name: bff-web
+                port:
+                  number: 3201
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: web-assistente
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: conectau-verificar-token@kubernetescrd,conectau-limite-assistente@kubernetescrd,conectau-sem-prefixo-web@kubernetescrd
+spec:
+  ingressClassName: traefik
+  rules:
+    - http:
+        paths:
+          - path: /web/conversas
+            pathType: Prefix
+            backend:
+              service:
+                name: bff-web
+                port:
+                  number: 3201
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: admin
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: conectau-verificar-token-admin@kubernetescrd,conectau-limite-geral@kubernetescrd,conectau-sem-prefixo-admin@kubernetescrd
+spec:
+  ingressClassName: traefik
+  rules:
+    - http:
+        paths:
+          - path: /admin
+            pathType: Prefix
+            backend:
+              service:
+                name: bff-admin
+                port:
+                  number: 3202
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: painel
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: conectau-painel-com-barra@kubernetescrd,conectau-sem-prefixo-painel@kubernetescrd
+spec:
+  ingressClassName: traefik
+  rules:
+    - http:
+        paths:
+          - path: /painel
+            pathType: Prefix
+            backend:
+              service:
+                name: painel-admin
+                port:
+                  number: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: portal
+spec:
+  ingressClassName: traefik
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: portal-web
+                port:
+                  number: 8080

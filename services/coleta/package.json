@@ -1,0 +1,16 @@
+{
+  "name": "@conectau/coleta",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "build": "node ../../scripts/empacotar.mjs src/index.ts"
+  },
+  "dependencies": {
+    "@conectau/comum": "1.0.0",
+    "express": "^5.3.0",
+    "mongodb": "^7.9.1"
+  }
+}
