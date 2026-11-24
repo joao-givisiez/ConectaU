@@ -1,0 +1,96 @@
+# Configuração não sensível de cada serviço (um ConfigMap por serviço).
+# Senhas e segredos ficam no Secret conectau-segredos, gerado pelo kustomization.yaml.
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: identidade-config
+  labels:
+    app: identidade
+data:
+  DB_HOST: "identidade-db"
+  DB_NOME: "identidade"
+  DB_USUARIO: "identidade"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coleta-config
+  labels:
+    app: coleta
+data:
+  MONGO_BANCO: "coleta"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: oportunidades-config
+  labels:
+    app: oportunidades
+data:
+  DB_HOST: "oportunidades-db"
+  DB_NOME: "oportunidades"
+  DB_USUARIO: "oportunidades"
+  LEITURA_DB_HOST: "oportunidades-leitura-db"
+  LEITURA_DB_NOME: "oportunidades_leitura"
+  LEITURA_DB_USUARIO: "oportunidades_leitura"
+  COLETA_URL: "http://coleta:3102"
+  ASSISTENTE_URL: "http://assistente:3105"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: oportunidades-projetor-config
+  labels:
+    app: oportunidades-projetor
+data:
+  PORT: "3113"
+  LEITURA_DB_HOST: "oportunidades-leitura-db"
+  LEITURA_DB_NOME: "oportunidades_leitura"
+  LEITURA_DB_USUARIO: "oportunidades_leitura"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: engajamento-config
+  labels:
+    app: engajamento
+data:
+  DB_HOST: "engajamento-db"
+  DB_NOME: "engajamento"
+  DB_USUARIO: "engajamento"
+  OPORTUNIDADES_URL: "http://oportunidades:3103"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: assistente-config
+  labels:
+    app: assistente
+data:
+  DB_HOST: "assistente-db"
+  DB_NOME: "assistente"
+  DB_USUARIO: "assistente"
+  SIMULAR_FALHA_INDEXACAO: "false"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bff-web-config
+  labels:
+    app: bff-web
+data:
+  IDENTIDADE_URL: "http://identidade:3101"
+  OPORTUNIDADES_URL: "http://oportunidades:3103"
+  ENGAJAMENTO_URL: "http://engajamento:3104"
+  ASSISTENTE_URL: "http://assistente:3105"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bff-admin-config
+  labels:
+    app: bff-admin
+data:
+  COLETA_URL: "http://coleta:3102"
+  OPORTUNIDADES_URL: "http://oportunidades:3103"
