@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ConectaU — Painel Admin</title>
+  <link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+  <header class="topo">
+    <span class="marca">ConectaU · Painel Admin</span>
+    <nav id="menu"></nav>
+  </header>
+
+  <main>
+    <section id="login" class="cartao">
+      <h2>Entrar como administrador</h2>
+      <form id="form-login">
+        <label>E-mail <input name="email" type="email" required autocomplete="username"></label>
+        <label>Senha <input name="senha" type="password" required autocomplete="current-password"></label>
+        <button type="submit">Entrar</button>
+      </form>
+    </section>
+
+    <div id="painel" class="oculto">
+      <div class="abas">
+        <button class="secundario" data-aba="curadoria" aria-pressed="true">Curadoria</button>
+        <button class="secundario" data-aba="RASCUNHO" aria-pressed="false">Rascunhos</button>
+        <button class="secundario" data-aba="PUBLICANDO" aria-pressed="false">Publicando</button>
+        <button class="secundario" data-aba="PUBLICADA" aria-pressed="false">Publicadas</button>
+        <button class="secundario" data-aba="ENCERRADA" aria-pressed="false">Encerradas</button>
+      </div>
+      <div id="aviso" class="aviso oculto" role="status"></div>
+      <section id="conteudo"></section>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
