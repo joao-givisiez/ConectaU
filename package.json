@@ -1,49 +1,35 @@
 {
   "name": "conectau",
   "version": "1.0.0",
+  "private": true,
   "description": "Plataforma ConectaU - Sistema distribuído de oportunidades universitárias",
-  "main": "index.js",
-  "directories": {
-    "doc": "docs"
-  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev:gateway": "npm run dev --workspace=@conectau/gateway",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present",
     "dev:identidade": "npm run dev --workspace=@conectau/identidade",
-    "dev:oportunidades": "npm run dev --workspace=@conectau/oportunidades",
     "dev:coleta": "npm run dev --workspace=@conectau/coleta",
+    "dev:oportunidades": "npm run dev --workspace=@conectau/oportunidades",
     "dev:engajamento": "npm run dev --workspace=@conectau/engajamento",
-    "dev:recomendacoes": "npm run dev --workspace=@conectau/recomendacoes",
-    "dev:notificacoes": "npm run dev --workspace=@conectau/notificacoes",
     "dev:assistente": "npm run dev --workspace=@conectau/assistente",
-    "dev:saga": "npm run dev --workspace=@conectau/saga-orchestrator",
     "dev:bff-web": "npm run dev --workspace=@conectau/bff-web",
     "dev:bff-admin": "npm run dev --workspace=@conectau/bff-admin"
   },
   "workspaces": [
+    "packages/*",
     "services/*",
-    "orchestrator/*",
-    "gateway",
     "bffs/*"
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/joao-givisiez/preojeto-sd.git"
+    "url": "git+https://github.com/joao-givisiez/ConectaU.git"
   },
-  "keywords": [],
-  "author": "",
   "license": "ISC",
   "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/joao-givisiez/preojeto-sd/issues"
-  },
-  "homepage": "https://github.com/joao-givisiez/preojeto-sd#readme",
-  "dependencies": {
-    "express": "^5.3.0"
-  },
   "devDependencies": {
     "@types/express": "^5.0.6",
     "@types/node": "^26.6.6",
+    "@types/pg": "^8.15.6",
+    "esbuild": "^0.28.2",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2"
   }

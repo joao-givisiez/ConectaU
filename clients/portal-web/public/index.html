@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ConectaU — Portal</title>
+  <link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+  <header class="topo">
+    <a class="marca" href="#" data-acao="inicio">ConectaU</a>
+    <nav id="menu"></nav>
+  </header>
+
+  <main>
+    <section id="sessao" class="cartao oculto">
+      <h2>Entrar</h2>
+      <form id="form-login">
+        <label>E-mail <input name="email" type="email" required autocomplete="username"></label>
+        <label>Senha <input name="senha" type="password" required autocomplete="current-password"></label>
+        <button type="submit">Entrar</button>
+      </form>
+      <details>
+        <summary>Ainda não tenho conta</summary>
+        <form id="form-cadastro">
+          <label>Nome <input name="nome" required></label>
+          <label>E-mail <input name="email" type="email" required></label>
+          <label>Senha (mín. 8) <input name="senha" type="password" minlength="8" required></label>
+          <label>Curso <input name="curso" required></label>
+          <label>Campus
+            <select name="campus">
+              <option value="LAVRAS">Lavras</option>
+              <option value="SAO_SEBASTIAO_DO_PARAISO">São Sebastião do Paraíso</option>
+            </select>
+          </label>
+          <label>Interesses (separados por vírgula) <input name="interesses" placeholder="tecnologia, pesquisa"></label>
+          <button type="submit">Criar conta</button>
+        </form>
+      </details>
+    </section>
+
+    <form id="form-busca" class="busca">
+      <input name="busca" type="search" placeholder="Buscar oportunidades (ex.: monitoria, docker)">
+      <button type="submit">Buscar</button>
+    </form>
+
+    <div id="aviso" class="aviso oculto" role="status"></div>
+    <section id="conteudo"></section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

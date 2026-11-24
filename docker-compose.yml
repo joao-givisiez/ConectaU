@@ -1,41 +1,324 @@
-﻿services:
-  identidade:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: conectau-identidade
-    environment:
-      NODE_ENV: production
-      PORT: 3101
-    ports:
-      - "3101:3101"
-    networks:
-      - rede-aplicacao
-      - rede-dados
-    restart: unless-stopped
+﻿# ConectaU — sistema completo com um único comando:
+#   docker compose up -d --build
+#
+# Acesso:  Portal Web http://localhost:8080 · Painel Admin http://localhost:8080/painel/
+#          Painel do Traefik http://127.0.0.1:8081 · RabbitMQ http://127.0.0.1:15672
+#
+# Redes (isolamento por camada):
+#   rede-borda        gateway, clientes, BFFs e Identidade (login e verificação de token)
+#   rede-aplicacao    BFFs e serviços de domínio; o gateway NÃO está nela (não alcança /internal/**)
+#   rede-mensageria   RabbitMQ e quem publica/consome eventos
+#   rede-dados-*      um banco por rede: só o serviço dono alcança o próprio banco
+#   rede-gerencia     apenas para publicar o painel do RabbitMQ no host
+# Todas as redes internas usam `internal: true` (sem saída para a internet).
 
-  postgres:
+name: conectau
+
+x-reinicio: &reinicio
+  restart: unless-stopped
+
+x-postgres-build: &postgres-build
+  context: .
+  dockerfile: infrastructure/docker/postgres/Dockerfile
+
+services:
+  # ---------------------------------------------------------------- borda
+  gateway:
+    <<: *reinicio
     build:
       context: .
-      dockerfile: infrastructure/docker/postgres/Dockerfile
-    container_name: conectau-postgres
+      dockerfile: infrastructure/docker/gateway/Dockerfile
+    image: conectau/gateway:1.0.0
+    ports:
+      - "8080:8000"
+      - "127.0.0.1:8081:8080"
+    networks: [rede-borda]
+    depends_on:
+      identidade: { condition: service_healthy }
+      bff-web: { condition: service_started }
+      bff-admin: { condition: service_started }
+      portal-web: { condition: service_started }
+      painel-admin: { condition: service_started }
+
+  portal-web:
+    <<: *reinicio
+    build: clients/portal-web
+    image: conectau/portal-web:1.0.0
+    networks: [rede-borda]
+
+  painel-admin:
+    <<: *reinicio
+    build: clients/painel-admin
+    image: conectau/painel-admin:1.0.0
+    networks: [rede-borda]
+
+  bff-web:
+    <<: *reinicio
+    build:
+      context: .
+      dockerfile: bffs/bff-web/Dockerfile
+    image: conectau/bff-web:1.0.0
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - rede-dados
-    restart: unless-stopped
+      IDENTIDADE_URL: http://identidade:3101
+      OPORTUNIDADES_URL: http://oportunidades:3103
+      ENGAJAMENTO_URL: http://engajamento:3104
+      ASSISTENTE_URL: http://assistente:3105
+    networks: [rede-borda, rede-aplicacao]
+
+  bff-admin:
+    <<: *reinicio
+    build:
+      context: .
+      dockerfile: bffs/bff-admin/Dockerfile
+    image: conectau/bff-admin:1.0.0
+    environment:
+      COLETA_URL: http://coleta:3102
+      OPORTUNIDADES_URL: http://oportunidades:3103
+    networks: [rede-borda, rede-aplicacao]
+
+  # ---------------------------------------------------------------- Identidade
+  identidade:
+    <<: *reinicio
+    build:
+      context: .
+      dockerfile: services/identidade/Dockerfile
+    image: conectau/identidade:1.0.0
+    environment:
+      DB_HOST: identidade-db
+      DB_NOME: identidade
+      DB_USUARIO: identidade
+      DB_SENHA: ${IDENTIDADE_DB_SENHA:?defina no .env}
+      JWT_SEGREDO: ${JWT_SEGREDO:?defina no .env}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?defina no .env}
+      ADMIN_SENHA: ${ADMIN_SENHA:?defina no .env}
+    networks: [rede-borda, rede-aplicacao, rede-dados-identidade]
+    depends_on:
+      identidade-db: { condition: service_healthy }
+
+  identidade-db:
+    <<: *reinicio
+    build:
+      <<: *postgres-build
+      args:
+        ESQUEMA: services/identidade/db/init.sql
+    image: conectau/identidade-db:1.0.0
+    environment:
+      POSTGRES_DB: identidade
+      POSTGRES_USER: identidade
+      POSTGRES_PASSWORD: ${IDENTIDADE_DB_SENHA:?defina no .env}
+    volumes: [identidade-dados:/var/lib/postgresql/data]
+    networks: [rede-dados-identidade]
+
+  # ---------------------------------------------------------------- Coleta
+  coleta:
+    <<: *reinicio
+    build:
+      context: .
+      dockerfile: services/coleta/Dockerfile
+    image: conectau/coleta:1.0.0
+    environment:
+      MONGO_URL: mongodb://coleta:${COLETA_DB_SENHA:?defina no .env}@coleta-db:27017/coleta?authSource=coleta
+      MONGO_BANCO: coleta
+      TOKEN_SERVICO: ${TOKEN_SERVICO:?defina no .env}
+    networks: [rede-aplicacao, rede-dados-coleta]
+    depends_on:
+      coleta-db: { condition: service_healthy }
+
+  coleta-db:
+    <<: *reinicio
+    build:
+      context: .
+      dockerfile: infrastructure/docker/mongo/Dockerfile
+    image: conectau/coleta-db:1.0.0
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: ${COLETA_DB_SENHA_ROOT:?defina no .env}
+      MONGO_INITDB_DATABASE: coleta
+      COLETA_DB_USUARIO: coleta
+      COLETA_DB_SENHA: ${COLETA_DB_SENHA:?defina no .env}
+    volumes: [coleta-dados:/data/db]
+    networks: [rede-dados-coleta]
+
+  # ---------------------------------------------------------------- Oportunidades (CQRS + SAGA + outbox)
+  oportunidades:
+    <<: *reinicio
+    build:
+      context: .
+      dockerfile: services/oportunidades/Dockerfile
+    image: conectau/oportunidades:1.0.0
+    environment:
+      DB_HOST: oportunidades-db
+      DB_NOME: oportunidades
+      DB_USUARIO: oportunidades
+      DB_SENHA: ${OPORTUNIDADES_DB_SENHA:?defina no .env}
+      LEITURA_DB_HOST: oportunidades-leitura-db
+      LEITURA_DB_NOME: oportunidades_leitura
+      LEITURA_DB_USUARIO: oportunidades_leitura
+      LEITURA_DB_SENHA: ${OPORTUNIDADES_LEITURA_DB_SENHA:?defina no .env}
+      RABBITMQ_URL: amqp://${RABBITMQ_USUARIO:?defina no .env}:${RABBITMQ_SENHA:?defina no .env}@rabbitmq:5672
+      COLETA_URL: http://coleta:3102
+      ASSISTENTE_URL: http://assistente:3105
+      TOKEN_SERVICO: ${TOKEN_SERVICO:?defina no .env}
+    networks: [rede-aplicacao, rede-mensageria, rede-dados-oportunidades, rede-dados-oportunidades-leitura]
+    depends_on:
+      oportunidades-db: { condition: service_healthy }
+      oportunidades-leitura-db: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+
+  # Mesma imagem de Oportunidades, outro processo: consome eventos e mantém o modelo de leitura.
+  oportunidades-projetor:
+    <<: *reinicio
+    build:
+      context: .
+      dockerfile: services/oportunidades/Dockerfile
+    image: conectau/oportunidades:1.0.0
+    command: ["node", "dist/projetor.cjs"]
+    environment:
+      PORT: 3113
+      LEITURA_DB_HOST: oportunidades-leitura-db
+      LEITURA_DB_NOME: oportunidades_leitura
+      LEITURA_DB_USUARIO: oportunidades_leitura
+      LEITURA_DB_SENHA: ${OPORTUNIDADES_LEITURA_DB_SENHA:?defina no .env}
+      RABBITMQ_URL: amqp://${RABBITMQ_USUARIO:?defina no .env}:${RABBITMQ_SENHA:?defina no .env}@rabbitmq:5672
+    networks: [rede-mensageria, rede-dados-oportunidades-leitura]
+    depends_on:
+      oportunidades-leitura-db: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+
+  oportunidades-db:
+    <<: *reinicio
+    build:
+      <<: *postgres-build
+      args:
+        ESQUEMA: services/oportunidades/db/escrita.sql
+    image: conectau/oportunidades-db:1.0.0
+    environment:
+      POSTGRES_DB: oportunidades
+      POSTGRES_USER: oportunidades
+      POSTGRES_PASSWORD: ${OPORTUNIDADES_DB_SENHA:?defina no .env}
+    volumes: [oportunidades-dados:/var/lib/postgresql/data]
+    networks: [rede-dados-oportunidades]
+
+  oportunidades-leitura-db:
+    <<: *reinicio
+    build:
+      <<: *postgres-build
+      args:
+        ESQUEMA: services/oportunidades/db/leitura.sql
+    image: conectau/oportunidades-leitura-db:1.0.0
+    environment:
+      POSTGRES_DB: oportunidades_leitura
+      POSTGRES_USER: oportunidades_leitura
+      POSTGRES_PASSWORD: ${OPORTUNIDADES_LEITURA_DB_SENHA:?defina no .env}
+    volumes: [oportunidades-leitura-dados:/var/lib/postgresql/data]
+    networks: [rede-dados-oportunidades-leitura]
+
+  # ---------------------------------------------------------------- Engajamento
+  engajamento:
+    <<: *reinicio
+    build:
+      context: .
+      dockerfile: services/engajamento/Dockerfile
+    image: conectau/engajamento:1.0.0
+    environment:
+      DB_HOST: engajamento-db
+      DB_NOME: engajamento
+      DB_USUARIO: engajamento
+      DB_SENHA: ${ENGAJAMENTO_DB_SENHA:?defina no .env}
+      RABBITMQ_URL: amqp://${RABBITMQ_USUARIO:?defina no .env}:${RABBITMQ_SENHA:?defina no .env}@rabbitmq:5672
+      OPORTUNIDADES_URL: http://oportunidades:3103
+    networks: [rede-aplicacao, rede-mensageria, rede-dados-engajamento]
+    depends_on:
+      engajamento-db: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+
+  engajamento-db:
+    <<: *reinicio
+    build:
+      <<: *postgres-build
+      args:
+        ESQUEMA: services/engajamento/db/init.sql
+    image: conectau/engajamento-db:1.0.0
+    environment:
+      POSTGRES_DB: engajamento
+      POSTGRES_USER: engajamento
+      POSTGRES_PASSWORD: ${ENGAJAMENTO_DB_SENHA:?defina no .env}
+    volumes: [engajamento-dados:/var/lib/postgresql/data]
+    networks: [rede-dados-engajamento]
+
+  # ---------------------------------------------------------------- Assistente
+  assistente:
+    <<: *reinicio
+    build:
+      context: .
+      dockerfile: services/assistente/Dockerfile
+    image: conectau/assistente:1.0.0
+    environment:
+      DB_HOST: assistente-db
+      DB_NOME: assistente
+      DB_USUARIO: assistente
+      DB_SENHA: ${ASSISTENTE_DB_SENHA:?defina no .env}
+      TOKEN_SERVICO: ${TOKEN_SERVICO:?defina no .env}
+      SIMULAR_FALHA_INDEXACAO: ${SIMULAR_FALHA_INDEXACAO:-false}
+    networks: [rede-aplicacao, rede-dados-assistente]
+    depends_on:
+      assistente-db: { condition: service_healthy }
+
+  assistente-db:
+    <<: *reinicio
+    build:
+      <<: *postgres-build
+      args:
+        IMAGEM_BASE: pgvector/pgvector:pg17
+        ESQUEMA: services/assistente/db/init.sql
+    image: conectau/assistente-db:1.0.0
+    environment:
+      POSTGRES_DB: assistente
+      POSTGRES_USER: assistente
+      POSTGRES_PASSWORD: ${ASSISTENTE_DB_SENHA:?defina no .env}
+    volumes: [assistente-dados:/var/lib/postgresql/data]
+    networks: [rede-dados-assistente]
+
+  # ---------------------------------------------------------------- Mensageria
+  rabbitmq:
+    <<: *reinicio
+    build:
+      context: .
+      dockerfile: infrastructure/docker/rabbitmq/Dockerfile
+    image: conectau/rabbitmq:1.0.0
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USUARIO:?defina no .env}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_SENHA:?defina no .env}
+    ports:
+      - "127.0.0.1:15672:15672"
+    volumes: [rabbitmq-dados:/var/lib/rabbitmq]
+    networks: [rede-mensageria, rede-gerencia]
 
 volumes:
-  postgres_data:
+  identidade-dados:
+  coleta-dados:
+  oportunidades-dados:
+  oportunidades-leitura-dados:
+  engajamento-dados:
+  assistente-dados:
+  rabbitmq-dados:
 
 networks:
+  rede-borda:
   rede-aplicacao:
-    driver: bridge
-
-  rede-dados:
-    driver: bridge
     internal: true
+  rede-mensageria:
+    internal: true
+  rede-dados-identidade:
+    internal: true
+  rede-dados-coleta:
+    internal: true
+  rede-dados-oportunidades:
+    internal: true
+  rede-dados-oportunidades-leitura:
+    internal: true
+  rede-dados-engajamento:
+    internal: true
+  rede-dados-assistente:
+    internal: true
+  rede-gerencia:

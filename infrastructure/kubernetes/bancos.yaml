@@ -1,0 +1,521 @@
+# Bancos e broker: um StatefulSet por instância, cada um com o próprio volume persistente
+# (database per service). Nenhum banco é compartilhado entre serviços.
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: identidade-db
+  labels:
+    app: identidade-db
+spec:
+  serviceName: identidade-db
+  replicas: 1
+  selector:
+    matchLabels:
+      app: identidade-db
+  template:
+    metadata:
+      labels:
+        app: identidade-db
+    spec:
+      containers:
+        - name: identidade-db
+          image: conectau/identidade-db:1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: "identidade"
+            - name: POSTGRES_USER
+              value: "identidade"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: conectau-segredos
+                  key: IDENTIDADE_DB_SENHA
+            - name: PGDATA
+              value: "/var/lib/postgresql/data/pgdata"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 256Mi
+          readinessProbe:
+            exec:
+              command: ["sh", "-c", "pg_isready -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\""]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+          volumeMounts:
+            - name: dados
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+    - metadata:
+        name: dados
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: identidade-db
+  labels:
+    app: identidade-db
+spec:
+  selector:
+    app: identidade-db
+  ports:
+    - name: p5432
+      port: 5432
+      targetPort: 5432
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: coleta-db
+  labels:
+    app: coleta-db
+spec:
+  serviceName: coleta-db
+  replicas: 1
+  selector:
+    matchLabels:
+      app: coleta-db
+  template:
+    metadata:
+      labels:
+        app: coleta-db
+    spec:
+      containers:
+        - name: coleta-db
+          image: conectau/coleta-db:1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 27017
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              value: "root"
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: conectau-segredos
+                  key: COLETA_DB_SENHA_ROOT
+            - name: MONGO_INITDB_DATABASE
+              value: "coleta"
+            - name: COLETA_DB_USUARIO
+              value: "coleta"
+            - name: COLETA_DB_SENHA
+              valueFrom:
+                secretKeyRef:
+                  name: conectau-segredos
+                  key: COLETA_DB_SENHA
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 512Mi
+          readinessProbe:
+            exec:
+              command: ["mongosh", "--quiet", "--eval", "quit(db.adminCommand('ping').ok ? 0 : 1)"]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+          volumeMounts:
+            - name: dados
+              mountPath: /data/db
+  volumeClaimTemplates:
+    - metadata:
+        name: dados
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: coleta-db
+  labels:
+    app: coleta-db
+spec:
+  selector:
+    app: coleta-db
+  ports:
+    - name: p27017
+      port: 27017
+      targetPort: 27017
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: oportunidades-db
+  labels:
+    app: oportunidades-db
+spec:
+  serviceName: oportunidades-db
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oportunidades-db
+  template:
+    metadata:
+      labels:
+        app: oportunidades-db
+    spec:
+      containers:
+        - name: oportunidades-db
+          image: conectau/oportunidades-db:1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: "oportunidades"
+            - name: POSTGRES_USER
+              value: "oportunidades"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: conectau-segredos
+                  key: OPORTUNIDADES_DB_SENHA
+            - name: PGDATA
+              value: "/var/lib/postgresql/data/pgdata"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 256Mi
+          readinessProbe:
+            exec:
+              command: ["sh", "-c", "pg_isready -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\""]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+          volumeMounts:
+            - name: dados
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+    - metadata:
+        name: dados
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oportunidades-db
+  labels:
+    app: oportunidades-db
+spec:
+  selector:
+    app: oportunidades-db
+  ports:
+    - name: p5432
+      port: 5432
+      targetPort: 5432
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: oportunidades-leitura-db
+  labels:
+    app: oportunidades-leitura-db
+spec:
+  serviceName: oportunidades-leitura-db
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oportunidades-leitura-db
+  template:
+    metadata:
+      labels:
+        app: oportunidades-leitura-db
+    spec:
+      containers:
+        - name: oportunidades-leitura-db
+          image: conectau/oportunidades-leitura-db:1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: "oportunidades_leitura"
+            - name: POSTGRES_USER
+              value: "oportunidades_leitura"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: conectau-segredos
+                  key: OPORTUNIDADES_LEITURA_DB_SENHA
+            - name: PGDATA
+              value: "/var/lib/postgresql/data/pgdata"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 256Mi
+          readinessProbe:
+            exec:
+              command: ["sh", "-c", "pg_isready -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\""]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+          volumeMounts:
+            - name: dados
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+    - metadata:
+        name: dados
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oportunidades-leitura-db
+  labels:
+    app: oportunidades-leitura-db
+spec:
+  selector:
+    app: oportunidades-leitura-db
+  ports:
+    - name: p5432
+      port: 5432
+      targetPort: 5432
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: engajamento-db
+  labels:
+    app: engajamento-db
+spec:
+  serviceName: engajamento-db
+  replicas: 1
+  selector:
+    matchLabels:
+      app: engajamento-db
+  template:
+    metadata:
+      labels:
+        app: engajamento-db
+    spec:
+      containers:
+        - name: engajamento-db
+          image: conectau/engajamento-db:1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: "engajamento"
+            - name: POSTGRES_USER
+              value: "engajamento"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: conectau-segredos
+                  key: ENGAJAMENTO_DB_SENHA
+            - name: PGDATA
+              value: "/var/lib/postgresql/data/pgdata"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 256Mi
+          readinessProbe:
+            exec:
+              command: ["sh", "-c", "pg_isready -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\""]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+          volumeMounts:
+            - name: dados
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+    - metadata:
+        name: dados
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: engajamento-db
+  labels:
+    app: engajamento-db
+spec:
+  selector:
+    app: engajamento-db
+  ports:
+    - name: p5432
+      port: 5432
+      targetPort: 5432
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: assistente-db
+  labels:
+    app: assistente-db
+spec:
+  serviceName: assistente-db
+  replicas: 1
+  selector:
+    matchLabels:
+      app: assistente-db
+  template:
+    metadata:
+      labels:
+        app: assistente-db
+    spec:
+      containers:
+        - name: assistente-db
+          image: conectau/assistente-db:1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: "assistente"
+            - name: POSTGRES_USER
+              value: "assistente"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: conectau-segredos
+                  key: ASSISTENTE_DB_SENHA
+            - name: PGDATA
+              value: "/var/lib/postgresql/data/pgdata"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 256Mi
+          readinessProbe:
+            exec:
+              command: ["sh", "-c", "pg_isready -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\""]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+          volumeMounts:
+            - name: dados
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+    - metadata:
+        name: dados
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: assistente-db
+  labels:
+    app: assistente-db
+spec:
+  selector:
+    app: assistente-db
+  ports:
+    - name: p5432
+      port: 5432
+      targetPort: 5432
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: rabbitmq
+  labels:
+    app: rabbitmq
+spec:
+  serviceName: rabbitmq
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rabbitmq
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+    spec:
+      containers:
+        - name: rabbitmq
+          image: conectau/rabbitmq:1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5672
+            - containerPort: 15672
+          env:
+            - name: RABBITMQ_DEFAULT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: conectau-segredos
+                  key: RABBITMQ_USUARIO
+            - name: RABBITMQ_DEFAULT_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: conectau-segredos
+                  key: RABBITMQ_SENHA
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 512Mi
+          readinessProbe:
+            exec:
+              command: ["rabbitmq-diagnostics", "-q", "ping"]
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          volumeMounts:
+            - name: dados
+              mountPath: /var/lib/rabbitmq
+  volumeClaimTemplates:
+    - metadata:
+        name: dados
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq
+  labels:
+    app: rabbitmq
+spec:
+  selector:
+    app: rabbitmq
+  ports:
+    - name: p5672
+      port: 5672
+      targetPort: 5672
+    - name: p15672
+      port: 15672
+      targetPort: 15672

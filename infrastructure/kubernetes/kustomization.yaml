@@ -1,0 +1,27 @@
+# Sobe o ConectaU inteiro no Kubernetes com um comando:
+#   kubectl apply -k infrastructure/kubernetes
+#
+# Antes, crie o arquivo de segredos local (ignorado pelo Git) a partir do exemplo:
+#   Copy-Item infrastructure/kubernetes/segredos.env.example infrastructure/kubernetes/segredos.env
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: conectau
+
+resources:
+  - namespace.yaml
+  - configmaps.yaml
+  - bancos.yaml
+  - servicos.yaml
+  - gateway.yaml
+
+# O Secret é gerado a partir de segredos.env. O sufixo de hash no nome faz os pods
+# serem recriados automaticamente quando um segredo muda.
+secretGenerator:
+  - name: conectau-segredos
+    envs:
+      - segredos.env
+
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: conectau
