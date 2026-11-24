@@ -1,0 +1,115 @@
+# Regras de roteamento do gateway (ver docs/arquitetura/4.3-gateway.md).
+#
+#   POST /auth/usuarios, /auth/sessoes  → Identidade (cadastro e login, sem token)
+#   /web/**                             → BFF Web   (token opcional; validado se enviado)
+#   /web/conversas/**                   → BFF Web   (limite de requisições mais restrito: LLM)
+#   /admin/**                           → BFF Admin (exige JWT com papel ADMIN)
+#   /painel/**                          → Painel Admin (arquivos estáticos)
+#   /                                   → Portal Web  (arquivos estáticos)
+#   /internal/**                        → sem rota: nunca exposto
+http:
+  routers:
+    autenticacao:
+      rule: "Method(`POST`) && (Path(`/auth/usuarios`) || Path(`/auth/sessoes`))"
+      entryPoints: [web]
+      priority: 300
+      middlewares: [limite-geral, auth-para-api]
+      service: identidade
+
+    web-assistente:
+      rule: "PathPrefix(`/web/conversas`)"
+      entryPoints: [web]
+      priority: 200
+      middlewares: [verificar-token, limite-assistente, sem-prefixo-web]
+      service: bff-web
+
+    web:
+      rule: "PathPrefix(`/web`)"
+      entryPoints: [web]
+      priority: 100
+      middlewares: [verificar-token, limite-geral, sem-prefixo-web]
+      service: bff-web
+
+    admin:
+      rule: "PathPrefix(`/admin`)"
+      entryPoints: [web]
+      priority: 100
+      middlewares: [verificar-token-admin, limite-geral, sem-prefixo-admin]
+      service: bff-admin
+
+    painel:
+      rule: "PathPrefix(`/painel`)"
+      entryPoints: [web]
+      priority: 90
+      middlewares: [painel-com-barra, sem-prefixo-painel]
+      service: painel-admin
+
+    portal:
+      rule: "PathPrefix(`/`)"
+      entryPoints: [web]
+      priority: 1
+      service: portal-web
+
+  middlewares:
+    # Validação de JWT delegada à Identidade (única dona do segredo do token).
+    # Os cabeçalhos X-Usuario-* são sempre substituídos pela resposta, então o cliente não consegue forjá-los.
+    verificar-token:
+      forwardAuth:
+        address: "http://identidade:3101/internal/autenticacao"
+        authResponseHeaders: [X-Usuario-Id, X-Usuario-Papel]
+    verificar-token-admin:
+      forwardAuth:
+        address: "http://identidade:3101/internal/autenticacao?papel=ADMIN"
+        authResponseHeaders: [X-Usuario-Id, X-Usuario-Papel]
+
+    # Limite por IP de origem.
+    limite-geral:
+      rateLimit:
+        average: 50
+        burst: 100
+    # Cada pergunta ao assistente consome crédito de LLM: 10 por minuto, rajada de 5.
+    limite-assistente:
+      rateLimit:
+        average: 10
+        period: 1m
+        burst: 5
+
+    auth-para-api:
+      replacePathRegex:
+        regex: "^/auth/(.*)"
+        replacement: "/api/v1/$1"
+    sem-prefixo-web:
+      stripPrefix:
+        prefixes: ["/web"]
+    sem-prefixo-admin:
+      stripPrefix:
+        prefixes: ["/admin"]
+    sem-prefixo-painel:
+      stripPrefix:
+        prefixes: ["/painel"]
+    painel-com-barra:
+      redirectRegex:
+        regex: "^(https?://[^/]+/painel)$"
+        replacement: "${1}/"
+
+  services:
+    identidade:
+      loadBalancer:
+        servers:
+          - url: "http://identidade:3101"
+    bff-web:
+      loadBalancer:
+        servers:
+          - url: "http://bff-web:3201"
+    bff-admin:
+      loadBalancer:
+        servers:
+          - url: "http://bff-admin:3202"
+    portal-web:
+      loadBalancer:
+        servers:
+          - url: "http://portal-web:8080"
+    painel-admin:
+      loadBalancer:
+        servers:
+          - url: "http://painel-admin:8080"

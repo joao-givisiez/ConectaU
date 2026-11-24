@@ -1,0 +1,24 @@
+# Configuração estática do gateway (Traefik).
+entryPoints:
+  web:
+    address: ":8000"
+
+# Painel do Traefik (rotas, middlewares e serviços), publicado só em 127.0.0.1 no Compose.
+api:
+  dashboard: true
+  insecure: true
+
+ping: {}
+
+providers:
+  file:
+    filename: /etc/traefik/dinamico.yml
+
+log:
+  level: INFO
+
+# Log de acesso: método, rota, status e latência. Os corpos não são registrados.
+accessLog:
+  fields:
+    headers:
+      defaultMode: drop

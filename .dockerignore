@@ -1,10 +1,22 @@
 ﻿node_modules
 **/node_modules
-.git
 **/dist
 **/build
 coverage
 *.log
+.git
+.github
+.claude
+.vscode
+
+# Segredos locais nunca entram numa imagem.
 .env
 .env.*
 !.env.example
+infrastructure/kubernetes/segredos.env
+
+# Não fazem parte de nenhuma imagem construída a partir da raiz.
+docs
+clients
+*.pdf
+*.md
