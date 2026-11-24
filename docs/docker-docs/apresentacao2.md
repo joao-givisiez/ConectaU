@@ -63,8 +63,6 @@ Os clientes web utilizam Nginx Unprivileged, pois são compostos por arquivos es
 
 Também foram criadas imagens personalizadas para PostgreSQL, MongoDB, RabbitMQ e Gateway, incorporando seus respectivos esquemas, scripts e configurações.
 
-**Responsável pela apresentação:** Guilherme.
-
 ---
 
 ## 3. Orquestração com Docker Compose
@@ -101,8 +99,6 @@ Para construir e iniciar a infraestrutura:
 docker compose up -d --build
 ```
 
-**Responsável pela apresentação:** Maria.
-
 ---
 
 ## 4. Persistência e monitoramento
@@ -123,8 +119,6 @@ Foram implementados mecanismos para preservar os dados e verificar a disponibili
 O Docker Compose também utiliza condições de dependência para aguardar a disponibilidade de bancos de dados e do RabbitMQ antes de iniciar os serviços que dependem deles.
 
 Os volumes nomeados permitem preservar os dados mesmo após a remoção e recriação dos containers, desde que sejam mantidos.
-
-**Responsável pela apresentação:** João.
 
 ---
 
@@ -161,8 +155,6 @@ kubectl scale deployment identidade --replicas=3 -n conectau
 
 Esse recurso permite aumentar ou reduzir a quantidade de Pods conforme a necessidade.
 
-**Responsáveis pela apresentação:** João e Gustavo.
-
 ---
 
 ## 6. Conclusão
@@ -174,8 +166,6 @@ Foram implementadas imagens personalizadas, redes isoladas, volumes persistentes
 Como complemento, o Kubernetes possibilitou explorar recursos de gerenciamento, configuração, roteamento e escalabilidade.
 
 Com isso, o ConectaU passou a contar com uma infraestrutura organizada para executar e gerenciar seus diferentes componentes.
-
-**Responsável pelo encerramento:** Gustavo.
 
 ---
 
