@@ -233,18 +233,11 @@ encontrada pelo estudante no momento adequado.
 
 ## 🏗️ Documentação de arquitetura
 
-A arquitetura está em [`docs/arquitetura/`](docs/arquitetura/). Comece pela
-[**visão geral**](docs/arquitetura/ARQUITETURA-CONECTAU.md), que traz o diagrama
-integrado e os números do sistema:
-
-- **5 serviços de domínio:** Identidade, Coleta, Oportunidades, Engajamento e Assistente;
-- **6 bancos**, um ou mais por serviço e nunca compartilhados (5 PostgreSQL e 1 MongoDB);
-- **API Gateway** (Traefik), **2 BFFs** e **2 clientes** (Portal Web e Painel Admin);
-- **SAGA** orquestrada de publicação, **CQRS** e **outbox** em Oportunidades; **RAG** no Assistente.
+A arquitetura proposta para a Parte 2 da disciplina está em
+[`docs/arquitetura/`](docs/arquitetura/):
 
 | Item | Documento |
 |---|---|
-| Visão geral | [`ARQUITETURA-CONECTAU.md`](docs/arquitetura/ARQUITETURA-CONECTAU.md) |
 | 4.1 — Decomposição em microsserviços | [`4.1-microsservicos.md`](docs/arquitetura/4.1-microsservicos.md) |
 | 4.2 — API REST e HATEOAS | [`4.2-api-rest.md`](docs/arquitetura/4.2-api-rest.md) · [`openapi.yaml`](docs/arquitetura/openapi.yaml) |
 | 4.3 — API Gateway | [`4.3-gateway.md`](docs/arquitetura/4.3-gateway.md) |
@@ -252,130 +245,142 @@ integrado e os números do sistema:
 | 4.5 — Dados, consistência e outbox | [`4.5-dados-outbox.md`](docs/arquitetura/4.5-dados-outbox.md) |
 | 4.6 — SAGA de publicação | [`4.6-saga.md`](docs/arquitetura/4.6-saga.md) |
 | 4.7 — CQRS | [`4.7-cqrs.md`](docs/arquitetura/4.7-cqrs.md) |
-| Por que um banco e um container por serviço | [`decisoes-isolamento.md`](docs/arquitetura/decisoes-isolamento.md) |
-| Parte 3 — containers, Compose e Kubernetes | [`docs/infraestrutura.md`](docs/infraestrutura.md) |
 
-> A arquitetura apresentada na Parte 2 tinha 7 serviços; ela foi simplificada para 5,
-> mantendo todos os padrões exigidos. O que mudou e por quê está na seção
-> [Revisão em relação à Parte 2](docs/arquitetura/4.1-microsservicos.md#revisão-em-relação-à-parte-2).
-> Na Parte 3, os 5 serviços, os BFFs, o gateway e os clientes foram implementados e
-> containerizados (Docker Compose e Kubernetes) — ver [Execução e infraestrutura](#-execução-e-infraestrutura).
+> Os documentos descrevem a proposta arquitetural da Parte 2. Na Parte 3,
+> foi implementado o serviço de identidade, acompanhado de sua infraestrutura
+> de conteinerização e orquestração com Docker, Docker Compose e Kubernetes.
 
 ---
 
 ## 🚀 Execução e infraestrutura
 
-O sistema completo roda em **18 containers**:
-- **Serviços de domínio:** 5 (Oportunidades em dois processos: API e projetor do CQRS);
-- **Borda:** 2 BFFs, 2 clientes e o API Gateway;
-- **Dados e mensageria:** 6 bancos e o RabbitMQ.
+A Parte 3 do projeto contempla a conteinerização do serviço de identidade e do banco de dados PostgreSQL, além da orquestração desses componentes utilizando Docker, Docker Compose e Kubernetes.
 
-Os detalhes de imagens, multi-stage, redes, volumes e manifests estão em [`docs/infraestrutura.md`](docs/infraestrutura.md).
+> 🎥 **Vídeo da entrega 3:** [assista à apresentação no Google Drive](https://drive.google.com/drive/folders/1_DyPLt6FhXqFV3msJlyv8K-zaNSfAilI?usp=sharing)
 
-| Tecnologia | Uso |
-|---|---|
-| **Node.js 22 + TypeScript** | Serviços e BFFs, num monorepo com npm workspaces e um pacote compartilhado ([`packages/comum`](packages/comum/)) |
-| **PostgreSQL 17** (5 instâncias, uma com **pgvector**) e **MongoDB 8** | Database per service |
-| **RabbitMQ 4** | Eventos publicados pela outbox de Oportunidades |
-| **Traefik 3** | API Gateway no Compose e Ingress Controller no Kubernetes |
-| **nginx** | Servidor dos clientes (Portal Web e Painel Admin) |
-| **Docker Compose** e **Kubernetes** | Execução local e orquestração |
+### Tecnologias utilizadas
 
-### Docker Compose (um comando)
+- **Docker:** construção das imagens dos serviços.
+- **Docker Compose:** execução integrada dos containers, com redes separadas por camada e volume persistente para o PostgreSQL.
+- **Kubernetes:** gerenciamento dos Pods, Deployments, Services, ConfigMap, Secret, PersistentVolumeClaim e Ingress.
+- **Traefik:** controlador de Ingress utilizado para direcionar as requisições ao serviço de identidade.
 
-Pré-requisitos: Docker Desktop (ou Docker Engine com Compose v2) e as portas 8080, 8081 e 15672 livres.
+### Execução com Docker Compose
 
-```powershell
-Copy-Item .env.example .env      # depois troque os valores do .env
-docker compose up -d --build
-docker compose ps                 # todos devem ficar "healthy" em ~1 minuto
-```
+Pré-requisitos: Docker Desktop e Docker Compose.
 
-| Endereço | O que é |
-|---|---|
-| http://localhost:8080 | **Portal Web** (comunidade) |
-| http://localhost:8080/painel/ | **Painel Admin** — entre com `ADMIN_EMAIL` e `ADMIN_SENHA` do `.env` |
-| http://127.0.0.1:8081 | Painel do Traefik (rotas e middlewares do gateway) |
-| http://127.0.0.1:15672 | Painel do RabbitMQ (`RABBITMQ_USUARIO` / `RABBITMQ_SENHA`) |
+1. Crie o arquivo de variáveis de ambiente:
 
-Na primeira subida, a Coleta já roda uma coleta da fonte de exemplo, com **dados fictícios**, e o Painel Admin mostra 6 candidatos para curadoria.
+   ```powershell
+   Copy-Item .env.example .env
+   ```
 
-Para encerrar, use `docker compose down`, que preserva os volumes dos bancos. Para apagar os dados e reexecutar os esquemas, use `docker compose down -v`.
+2. Configure as credenciais no arquivo `.env`.
 
-**Demonstração de ponta a ponta.** Requer Node.js 22 no host. O script percorre todo o fluxo pelo gateway: login, curadoria, SAGA (caminho feliz e falha com compensação), CQRS, feed, favoritos, assistente, segurança e encerramento.
+3. Construa as imagens e inicie os serviços:
 
-```powershell
-node scripts/demonstracao.mjs
-```
+   ```powershell
+   docker compose up -d --build
+   ```
 
-**Provocar a falha da SAGA manualmente.** Pare o Assistente, publique uma oportunidade pelo Painel Admin e veja a compensação acontecer:
+4. Verifique os containers:
+
+   ```powershell
+   docker compose ps
+   ```
+
+5. Teste o serviço de identidade:
+
+   ```powershell
+   Invoke-RestMethod http://localhost:3101/health
+   ```
+
+Para encerrar os containers:
 
 ```powershell
-docker compose stop assistente
-docker compose start assistente
+docker compose down
 ```
 
-Outra opção é definir `SIMULAR_FALHA_INDEXACAO=true` no `.env` e rodar `docker compose up -d assistente`.
+O volume nomeado do PostgreSQL é preservado ao encerrar os containers com esse comando.
 
-**Ver os bancos separados:**
+### Orquestração com Kubernetes
+
+Pré-requisitos: Docker Desktop com Kubernetes habilitado, `kubectl` configurado e controlador Traefik instalado no cluster.
+
+Construa as imagens utilizadas pelos manifests:
 
 ```powershell
-docker compose exec identidade-db psql -U identidade -c "\dt"
-docker compose exec oportunidades-leitura-db psql -U oportunidades_leitura -c "SELECT titulo, versao, visivel FROM oportunidades_view"
-docker compose exec coleta-db mongosh -u root -p --authenticationDatabase admin coleta --eval "db.candidatos.countDocuments()"
+docker build -t conectau-identidade:1.0 -f Dockerfile .
+docker build -t conectau-postgres:latest -f infrastructure/docker/postgres/Dockerfile .
 ```
 
-### Kubernetes
-
-Pré-requisitos: Kubernetes do Docker Desktop habilitado, `kubectl` e o **Traefik** instalado no cluster como Ingress Controller (com as CRDs).
+Configure o Secret local a partir do exemplo:
 
 ```powershell
-# 1. Construir as imagens (as mesmas do Compose)
-docker compose build
-
-# 2. Só no Kubernetes do Docker Desktop em modo kind: carregar as imagens no nó
-node scripts/carregar-imagens-kind.mjs
-
-# 3. Criar o arquivo de segredos (ignorado pelo Git) e trocar os valores
-Copy-Item infrastructure/kubernetes/segredos.env.example infrastructure/kubernetes/segredos.env
-
-# 4. Aplicar tudo (namespace, ConfigMaps, Secret, StatefulSets, Deployments, Services e Ingress)
-kubectl apply -k infrastructure/kubernetes
-kubectl get pods -n conectau -w
+Copy-Item infrastructure/kubernetes/secret.example.yaml infrastructure/kubernetes/secret.yaml
 ```
 
-Acesso pelo Ingress, num terminal separado:
+Edite o arquivo `secret.yaml` com as credenciais desejadas. Esse arquivo contém credenciais locais e é ignorado pelo Git; apenas o arquivo `secret.example.yaml`, com valores ilustrativos, é versionado no repositório.
+
+Aplique os manifests:
 
 ```powershell
-kubectl port-forward -n traefik service/traefik 8090:80
+kubectl apply -f infrastructure/kubernetes/namespace.yaml
+kubectl apply -f infrastructure/kubernetes/secret.yaml
+kubectl apply -f infrastructure/kubernetes/configmap.yaml
+kubectl apply -f infrastructure/kubernetes/postgres.yaml
+kubectl apply -f infrastructure/kubernetes/identidade.yaml
+kubectl apply -f infrastructure/kubernetes/ingress.yaml
 ```
 
-Depois disso, o Portal fica em http://localhost:8090, o Painel em http://localhost:8090/painel/, e a demonstração roda com `node scripts/demonstracao.mjs --url=http://localhost:8090 --falha=k8s`.
-
-**Escalabilidade:**
+Verifique os recursos:
 
 ```powershell
-kubectl scale deployment bff-web -n conectau --replicas=4
-kubectl scale deployment oportunidades -n conectau --replicas=3
-kubectl get pods -n conectau -l app=oportunidades
+kubectl get all -n conectau
+kubectl get pvc -n conectau
+kubectl get ingress -n conectau
 ```
 
-Com várias réplicas de Oportunidades, cada SAGA e cada lote da outbox continua sendo processado por uma única réplica (`FOR UPDATE SKIP LOCKED`).
+### Acesso ao serviço pelo Ingress
 
-**Falha da SAGA no cluster:** escale o Assistente para zero, publique uma oportunidade e depois volte a escala para um.
+Com o Traefik em execução, abra um terminal e execute:
 
 ```powershell
-kubectl scale deployment assistente -n conectau --replicas=0
-kubectl scale deployment assistente -n conectau --replicas=1
+kubectl port-forward -n traefik service/traefik 8080:80
 ```
 
-### Desenvolvimento
+Em outro terminal, teste o acesso:
 
 ```powershell
-npm install
-npm run typecheck     # checa os tipos de todos os workspaces
-npm run build         # empacota cada serviço com esbuild (dist/*.cjs)
+Invoke-RestMethod -Uri http://localhost:8080/health -Headers @{ Host = "conectau.local" }
 ```
+
+### Demonstração de escalabilidade
+
+Para aumentar o número de réplicas do serviço de identidade:
+
+```powershell
+kubectl scale deployment identidade -n conectau --replicas=3
+```
+
+Verifique os Pods:
+
+```powershell
+kubectl get pods -n conectau
+```
+
+Para retornar à configuração inicial:
+
+```powershell
+kubectl scale deployment identidade -n conectau --replicas=1
+```
+
+### Persistência de dados
+
+A persistência do PostgreSQL foi verificada nos dois ambientes:
+
+- **Docker Compose:** os dados permaneceram disponíveis após a reinicialização do container, utilizando volume nomeado.
+- **Kubernetes:** os dados permaneceram disponíveis após a recriação do Pod PostgreSQL, utilizando PersistentVolumeClaim.
 
 ---
 
