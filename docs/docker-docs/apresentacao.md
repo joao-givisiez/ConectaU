@@ -19,6 +19,7 @@ Arquitetura da solução
 A infraestrutura contempla microsserviços, BFFs, clientes web, bancos de dados, mensageria e um Gateway para direcionamento das requisições.
 
 flowchart TD
+
     A[Usuário] --> B[Gateway / Traefik]
     B --> C[Portal Web]
     B --> D[Painel Admin]
