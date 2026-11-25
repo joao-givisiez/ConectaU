@@ -40,7 +40,7 @@ Os 7 componentes em Node.js usam dois estágios:
 
 Os clientes **não** usam multi-stage porque são HTML, CSS e JavaScript puros, sem etapa de compilação; um estágio de build não teria o que fazer. Os bancos também não, porque só acrescentam arquivos de inicialização à imagem oficial.
 
-Outras práticas aplicadas: processo rodando como usuário sem privilégios (`USER node`, `nginx-unprivileged`), `HEALTHCHECK` em todas as imagens, versões de base fixadas, `.dockerignore` que impede segredos (`.env`) e documentação de entrarem no contexto de build, e cache de dependências com `--mount=type=cache`.
+Outras práticas aplicadas: processo rodando como usuário sem privilégios (`USER node`, `nginx-unprivileged`), `HEALTHCHECK` em todas as imagens, imagens base fixadas na versão principal (`node:22-alpine`, `postgres:17-alpine`, `mongo:8.0`, `traefik:v3.7`), `.dockerignore` que impede segredos (`.env`) e documentação de entrarem no contexto de build, e cache de dependências com `--mount=type=cache`.
 
 ## 3. Docker Compose
 
@@ -72,9 +72,9 @@ Tudo sobe com `kubectl apply -k infrastructure/kubernetes` ([kustomization.yaml]
 
 | Recurso | Arquivo | O que contém |
 |---|---|---|
-| Deployments + Services | [servicos.yaml](../infrastructure/kubernetes/servicos.yaml) | 10 Deployments (5 serviços, o projetor, 2 BFFs, 2 clientes), cada um com Service ClusterIP, `resources`, readiness em `/health` e liveness por TCP |
+| Deployments + Services | [servicos.yaml](../infrastructure/kubernetes/servicos.yaml) | 10 Deployments (5 serviços, o projetor, 2 BFFs, 2 clientes), todos com `resources`, readiness em `/health` e liveness por TCP. São 9 Services ClusterIP: o projetor não tem Service porque não recebe requisições, só consome eventos do RabbitMQ |
 | StatefulSets + Services | [bancos.yaml](../infrastructure/kubernetes/bancos.yaml) | 7 StatefulSets (6 bancos e o RabbitMQ), cada um com o próprio PersistentVolumeClaim (`volumeClaimTemplates`) |
-| ConfigMaps | [configmaps.yaml](../infrastructure/kubernetes/configmaps.yaml) | Um por serviço, só com configuração não sensível (hosts, nomes de banco, URLs internas) |
+| ConfigMaps | [configmaps.yaml](../infrastructure/kubernetes/configmaps.yaml) | 8 ConfigMaps, um para cada processo Node (5 serviços, o projetor e os 2 BFFs), só com configuração não sensível (hosts, nomes de banco, URLs internas). Os clientes não precisam de configuração |
 | Secret | gerado de `segredos.env` | Senhas dos bancos, `JWT_SEGREDO`, `TOKEN_SERVICO`, credenciais do admin e do RabbitMQ. O arquivo real é ignorado pelo Git; só o [exemplo](../infrastructure/kubernetes/segredos.env.example) é versionado |
 | Ingress + Middlewares | [gateway.yaml](../infrastructure/kubernetes/gateway.yaml) | As mesmas regras do gateway do Compose, aplicadas pelo Traefik do cluster: `/auth`, `/web`, `/admin`, `/painel` e `/` |
 
@@ -100,19 +100,21 @@ Bancos não são escalados horizontalmente (1 réplica por StatefulSet): replica
 
 ## 6. Verificação de ponta a ponta
 
-[`scripts/demonstracao.mjs`](../scripts/demonstracao.mjs) percorre o sistema pelo gateway, como um cliente real, e confere cada etapa:
+[`scripts/demonstracao.mjs`](../scripts/demonstracao.mjs) percorre o sistema pelo gateway, como um cliente real, e confere cada etapa. A numeração abaixo é a mesma que o roteiro imprime na tela:
 
-1. Clientes servidos pelo gateway; login do admin (JWT).
-2. Fila de curadoria vinda da Coleta (MongoDB).
-3. Oportunidade em `RASCUNHO` com links HATEOAS.
-4. **SAGA — caminho feliz** (Oportunidades → Coleta → Assistente → pivô).
-5. **CQRS** — a busca pública reflete a publicação após alguns centésimos de segundo.
-6. Feed do BFF Web filtrado pelo perfil; a mesma oportunidade nos dois BFFs.
-7. Favorito, favorito duplicado (409) e lembrete.
-8. Assistente: busca vetorial no pgvector sobre o texto indexado pela SAGA.
-9. Segurança: 401 sem token, 403 com papel errado, cabeçalho `X-Usuario-*` forjado descartado pelo gateway.
-10. **SAGA com falha** — o Assistente é derrubado; a SAGA compensa, o candidato volta a `PENDENTE` e a oportunidade a `RASCUNHO`.
-11. Encerramento: o projetor remove a oportunidade da busca e o Engajamento avisa quem a salvou.
+1. Clientes servidos pelo gateway.
+2. Login do administrador (gateway → Identidade, JWT).
+3. Fila de curadoria: candidatos `PENDENTE` vindos da Coleta (MongoDB).
+4. Cadastro de oportunidade em `RASCUNHO` com links HATEOAS.
+5. **SAGA — caminho feliz** (Oportunidades → Coleta → Assistente → pivô).
+6. **CQRS** — a busca pública reflete a publicação após alguns centésimos de segundo.
+7. Estudante: cadastro, login e feed do BFF Web filtrado pelo perfil.
+8. BFF: a mesma oportunidade vista por cada cliente.
+9. Engajamento: favorito, favorito duplicado (409) e lembrete.
+10. Assistente: busca vetorial no pgvector sobre o texto indexado pela SAGA.
+11. Segurança: 401 sem token, 403 com papel errado, cabeçalho `X-Usuario-*` forjado descartado pelo gateway.
+12. **SAGA com falha** — o Assistente é derrubado; a SAGA compensa, o candidato volta a `PENDENTE` e a oportunidade a `RASCUNHO`.
+13. Encerramento: o projetor remove a oportunidade da busca e o Engajamento avisa quem a salvou.
 
 ```powershell
 node scripts/demonstracao.mjs                                              # Docker Compose
