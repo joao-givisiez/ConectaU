@@ -1,0 +1,9 @@
+{
+  "name": "assistente-nativos",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Dependências com binários nativos (ONNX Runtime) do Assistente. Ficam em node_modules na imagem final, fora do arquivo empacotado. Manter a versão igual à de services/assistente/package.json.",
+  "dependencies": {
+    "@huggingface/transformers": "4.3.2"
+  }
+}
