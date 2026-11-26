@@ -13,7 +13,7 @@ COPY scripts ./scripts
 COPY packages ./packages
 COPY services ./services
 COPY bffs ./bffs
-RUN --mount=type=cache,target=/root/.npm npm ci --no-audit --no-fund
+RUN --mount=type=cache,target=/root/.npm npm ci --no-audit --no-fund --workspace=@conectau/identidade --include-workspace-root
 RUN npm run typecheck --workspace=@conectau/identidade  && npm run build --workspace=@conectau/identidade
 
 # ---------- Estágio 2: execução ----------

@@ -117,3 +117,14 @@ input, select, textarea {
 .clicavel:hover { border-color: var(--destaque); }
 
 details summary { cursor: pointer; margin: 10px 0; color: var(--destaque); }
+
+/* Assistente */
+.pergunta-usuario { margin: 14px 0 6px auto; max-width: 85%; width: fit-content; padding: 8px 12px; border-radius: 12px; background: var(--destaque); color: var(--destaque-texto); }
+.resposta-assistente { margin: 6px 0 14px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--borda); background: var(--fundo); }
+.resposta-assistente p { margin: 6px 0; }
+.resposta-assistente.carregando { color: var(--suave); }
+.resposta-assistente .selo { font-size: 0.8rem; color: var(--suave); margin-bottom: 4px; }
+.origem-fallback .selo, .origem-recusa .selo { color: var(--alerta); }
+.rotulo { font-size: 0.72rem; font-weight: 700; color: var(--destaque); margin-left: 2px; }
+.fonte .meta { align-items: center; margin-bottom: 4px; }
+#resposta .resposta-assistente, #resposta .pergunta-usuario { margin-left: 0; }

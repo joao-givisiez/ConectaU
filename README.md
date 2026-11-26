@@ -1,427 +1,197 @@
-# 🌱 ConectaU
-### Descubra, participe, conecte-se.
-
 <p align="center">
-  <img src="docs/imagens/logo.png"
-       alt="Visão geral do ConectaU"
-       width="900">
+  <img src="docs/imagens/logo.png" alt="ConectaU" width="520">
 </p>
 
-> **O problema não é a falta de oportunidades na UFLA.
-> É o custo de descobri-las a tempo e encontrar as que realmente são
-> relevantes para cada pessoa.**
+<h3 align="center">Descubra, participe, conecte-se.</h3>
 
----
-
-## 📌 Sobre o ConectaU
-
-O **ConectaU** é uma plataforma web que reúne e personaliza
-oportunidades da UFLA, como eventos, atividades, bolsas, projetos
-e processos seletivos.
-
-A proposta é facilitar a descoberta dessas oportunidades,
-funcionando como uma **camada complementar aos canais oficiais
-da universidade**.
-
-O ConectaU **não realiza inscrições**. Ao encontrar algo relevante,
-o usuário é levado ao **canal oficial responsável pela oportunidade** (da UFLA, quando aplicável), onde a participação
-é efetivada. A plataforma cuida da parte que hoje falha: descobrir
-a oportunidade certa a tempo.
+<p align="center">
+  <a href="docker-compose.yml"><b>🐳 docker-compose.yml</b></a> ·
+  <a href="#-dockerfiles"><b>📦 Dockerfiles</b></a> ·
+  <a href="docs/arquitetura/ARQUITETURA-CONECTAU.md"><b>🏗️ Arquitetura</b></a> ·
+  <a href="SISTEMA.md"><b>📘 Como funciona</b></a> ·
+  <a href="docs/arquitetura/openapi.yaml"><b>📄 OpenAPI</b></a> ·
+  <a href="infrastructure/kubernetes/"><b>☸️ Kubernetes</b></a> ·
+  <a href="#-roteiro-da-demonstração"><b>▶️ Demonstração</b></a>
+</p>
 
 ---
 
 ## ❗ O problema
 
-A UFLA oferece e divulga diversas oportunidades para sua comunidade
-universitária.
+A UFLA divulga muitas oportunidades (eventos, bolsas, projetos, processos seletivos), mas elas ficam espalhadas por e-mail, redes sociais, grupos, sites e o SIG. Quem poderia participar **descobre tarde demais**.
 
-O desafio está em fazer **a oportunidade certa chegar à pessoa certa,
-no momento certo**.
+O **ConectaU** reúne essas oportunidades num só lugar, filtra pelo perfil de cada pessoa e lembra dos prazos. A inscrição continua no canal oficial: o ConectaU resolve a **descoberta**.
 
-Atualmente, essas informações podem estar distribuídas entre
-diferentes canais:
+Problema, pesquisa, impacto social e referências completas: [`docs/README-COMPLETO.md`](docs/README-COMPLETO.md).
 
-<p align="center">
-  <img src="docs/imagens/informacoes-distribuidas.png"
-       alt="Informações distribuídas em diferentes canais"
-       width="600">
-</p>
+## 👥 Equipe
 
-**E-mail institucional · Redes sociais · Grupos de mensagens ·
-Sites e portais · SIG · Professores · Organizações estudantis**
-
-Essa dispersão exige que cada pessoa acompanhe diferentes fontes e
-identifique, entre muitas informações, aquilo que é relevante para
-seu perfil.
-
-Como consequência, uma oportunidade pode ser descoberta tarde demais
-ou nem chegar ao conhecimento de quem poderia participar.
-
----
-
-## 📚 Motivação e evidências
-
-Estudos sobre comunicação no ensino superior indicam que estudantes
-recebem informações por diferentes canais e que aspectos como
-**relevância, preferências e excesso de mensagens** influenciam a
-forma como essas informações são percebidas.
-
-Além disso, pesquisas relacionam a participação em atividades
-extracurriculares e o sentimento de pertencimento à experiência e a
-diferentes resultados acadêmicos dos estudantes.
-
-Essas evidências, juntamente com uma pesquisa exploratória realizada
-com membros da comunidade da UFLA, ajudaram a fundamentar o problema
-abordado pelo ConectaU.
-
----
-
-## 📊 Pesquisa exploratória
-
-Para realizar uma validação inicial do problema dentro da comunidade
-da UFLA, foi elaborado um formulário sobre a descoberta de eventos,
-projetos, bolsas, processos seletivos e outras oportunidades.
-
-A pesquisa recebeu **26 respostas**.
-
-Os resultados apontam para dificuldades relacionadas à descoberta
-oportuna de oportunidades e indicam interesse em recursos que
-facilitem sua busca e organização.
-
-<p align="center">
-  <img src="docs/imagens/g1.png"
-       alt="Participantes que deixaram de participar por não saberem da oportunidade a tempo"
-       width="600">
-</p>
-
-### Recursos considerados úteis
-
-<p align="center">
-  <img src="docs/imagens/g2.png"
-       alt="Recursos considerados úteis pelos participantes"
-       width="600">
-</p>
-
-Entre os participantes que relataram ter descoberto oportunidades
-tarde demais, o motivo mais frequente foi ter tomado conhecimento
-**após o encerramento das inscrições**.
-
-> **Importante:** a pesquisa possui caráter exploratório e não tem como
-> objetivo representar estatisticamente toda a comunidade da UFLA.
-
----
-
-## 👥 Público-alvo
-
-O ConectaU é destinado à comunidade universitária, incluindo:
-
-<p align="center">
-  <img src="docs/imagens/pa.png"
-       alt="Público-alvo do ConectaU"
-       width="600">
-</p>
-
-A proposta contempla inicialmente os campi de **Lavras/MG** e
-**São Sebastião do Paraíso/MG**.
-
----
-
-## 💡 Proposta de solução
-
-O ConectaU propõe uma plataforma que reúne oportunidades em um único
-ambiente e permite que cada usuário encontre aquilo que é mais
-relevante para seu perfil.
-
-<p align="center">
-  <img src="docs/imagens/ps.png"
-       alt="Fluxo de funcionamento do ConectaU"
-       width="600">
-</p>
-
-O fluxo permite que o usuário encontre, filtre e acompanhe
-oportunidades relevantes até o momento da participação — que acontece
-**no canal oficial**, por meio do link da publicação original.
-
-### Como as oportunidades entram na plataforma
-
-| Caminho | Como funciona |
+| Integrante | Função |
 |---|---|
-| **Coleta automática** | Um coletor percorre periodicamente páginas públicas da UFLA, normaliza o que encontra, remove duplicados e coloca os resultados em uma fila de curadoria |
-| **Cadastro manual** | Quem deseja divulgar algo procura a equipe do ConectaU |
-
-Em ambos os casos, **a publicação é feita por um administrador da
-plataforma**: não existe cadastro aberto de oportunidades por usuários.
-Essa curadoria humana é o que impede divulgações falsas ou incorretas
-de chegarem à comunidade.
-
-Cada oportunidade publicada sempre aponta para a **fonte oficial**,
-preservando a origem da informação.
-
-O ConectaU **não substitui os canais oficiais da UFLA**.
-
-A proposta é atuar como uma **camada complementar de descoberta e
-organização**, facilitando o acesso às informações que já são
-divulgadas pela universidade e por sua comunidade.
+| Guilherme Alexandre Cunha Silva | Scrum Master |
+| Gustavo de Assis Vieira | Desenvolvedor |
+| João Vitor Givisiez Lessa | Desenvolvedor |
+| Maria Luiza Santos Ferreira | Product Owner |
 
 ---
 
-## 🎯 Impacto social esperado
+## 🔎 Acesso
 
-O impacto esperado está relacionado principalmente à ampliação do
-acesso às oportunidades e ao estímulo à participação da comunidade.
+Os arquivos mais pedidos na apresentação, a um clique.
 
-<!-- <p align="center">
-  <img src="docs/imagens/impacto-conectau.png"
-       alt="Impacto social esperado do ConectaU"
-       width="750">
-</p>-->
-
-Espera-se contribuir para:
-
-- ampliar o acesso às oportunidades;
-- facilitar a descoberta de atividades relevantes;
-- estimular a participação da comunidade;
-- aproximar estudantes, professores e servidores;
-- fortalecer a integração entre cursos, áreas e campi.
-
-### 📈 Como medir o impacto
-
-O impacto poderá ser acompanhado por indicadores como:
-
-- quantidade de oportunidades cadastradas;
-- quantidade de oportunidades visualizadas;
-- quantidade de usuários participantes;
-- quantidade de oportunidades salvas;
-- distribuição de oportunidades visualizadas entre cursos e campi;
-- encaminhamentos da plataforma para os canais oficiais;
-- redução de relatos de descoberta tardia;
-- percepção dos usuários sobre a facilidade de encontrar oportunidades.
-
----
-
-## 🧪 Exemplo de uso
-
-Imagine um estudante interessado em **pesquisa e tecnologia**.
-
-Em vez de acompanhar diversos canais separadamente, ele acessa o
-ConectaU e encontra oportunidades relacionadas aos seus interesses.
-
-Ele pode filtrar as oportunidades, salvar aquelas que considera
-relevantes e criar lembretes para não perder os prazos.
-
-Ao decidir participar, ele abre o **link da fonte oficial** e conclui
-a inscrição no canal da UFLA.
-
-Assim, uma oportunidade que poderia passar despercebida pode ser
-encontrada pelo estudante no momento adequado.
-
----
-
-## 🆔 Identidade da startup
-
-**Nome:** ConectaU
-
-**Slogan:** *Descubra, participe, conecte-se.*
-
-### Proposta de valor
-
-> **Uma plataforma que reúne e personaliza oportunidades da UFLA para
-> que cada membro da comunidade encontre o que é relevante para ele
-> antes que o prazo acabe.**
-
----
-
-## 🏗️ Documentação de arquitetura
-
-A arquitetura proposta para a Parte 2 da disciplina está em
-[`docs/arquitetura/`](docs/arquitetura/):
-
-| Item | Documento |
+| Requisito | Clique aqui |
 |---|---|
-| 4.1 — Decomposição em microsserviços | [`4.1-microsservicos.md`](docs/arquitetura/4.1-microsservicos.md) |
-| 4.2 — API REST e HATEOAS | [`4.2-api-rest.md`](docs/arquitetura/4.2-api-rest.md) · [`openapi.yaml`](docs/arquitetura/openapi.yaml) |
-| 4.3 — API Gateway | [`4.3-gateway.md`](docs/arquitetura/4.3-gateway.md) |
-| 4.4 — Backend for Frontend | [`4.4-bff.md`](docs/arquitetura/4.4-bff.md) |
-| 4.5 — Dados, consistência e outbox | [`4.5-dados-outbox.md`](docs/arquitetura/4.5-dados-outbox.md) |
-| 4.6 — SAGA de publicação | [`4.6-saga.md`](docs/arquitetura/4.6-saga.md) |
-| 4.7 — CQRS | [`4.7-cqrs.md`](docs/arquitetura/4.7-cqrs.md) |
+| **docker-compose.yml** | [`docker-compose.yml`](docker-compose.yml) · [serviços](docker-compose.yml#L25) · [volumes](docker-compose.yml#L310) · [redes](docker-compose.yml#L319) |
+| **Dockerfile** de um serviço | [tabela de Dockerfiles](#-dockerfiles) |
+| **Arquitetura** (diagrama integrado) | [`ARQUITETURA-CONECTAU.md`](docs/arquitetura/ARQUITETURA-CONECTAU.md) |
+| **Como o sistema funciona** de ponta a ponta | [`SISTEMA.md`](SISTEMA.md) |
+| **Contrato da API** (OpenAPI) | [`openapi.yaml`](docs/arquitetura/openapi.yaml) · [tabela de endpoints](docs/arquitetura/4.2-api-rest.md) |
+| **Manifests do Kubernetes** | [`infrastructure/kubernetes/`](infrastructure/kubernetes/) |
+| **Vídeos** | [Entrega da Parte 3](https://drive.google.com/drive/folders/1_DyPLt6FhXqFV3msJlyv8K-zaNSfAilI?usp=sharing) · [Apresentação da Parte 4](https://drive.google.com/drive/folders/1RMfmpTee2t_p9UVo2xa4N_pcoxAWNv33?usp=sharing) |
+| **Variáveis de ambiente** (modelo do `.env`) | [`.env.example`](.env.example) |
 
-> Os documentos descrevem a proposta arquitetural da Parte 2. Na Parte 3,
-> foi implementado o serviço de identidade, acompanhado de sua infraestrutura
-> de conteinerização e orquestração com Docker, Docker Compose e Kubernetes.
+---
+
+## ✅ Requisitos da Parte 4
+
+> 🎥 **Vídeo da apresentação da Parte 4:** [assista no Google Drive](https://drive.google.com/drive/folders/1RMfmpTee2t_p9UVo2xa4N_pcoxAWNv33?usp=sharing)
+
+Cada linha leva direto ao trecho do código que implementa o requisito e ao documento que explica a decisão.
+
+### 6.1 Sistema distribuído funcional
+
+Toda requisição entra pelo **API Gateway** (Traefik), que confere o login e limita o número de requisições. Depois ela passa pelo **BFF** do cliente (Portal Web ou Painel Admin) e chega aos serviços de domínio.
+
+Publicar uma oportunidade é a **SAGA**: o serviço Oportunidades coordena 3 passos em 3 serviços. Primeiro marca o candidato como usado na Coleta, depois indexa o texto no Assistente e por fim publica. Se um passo falha, os anteriores são desfeitos (**compensação**) e a oportunidade volta para rascunho.
+
+O catálogo usa **CQRS**: as escritas vão para um banco e as buscas leem de outro, atualizado por eventos. A **outbox** garante que nenhum evento se perde, porque ele é gravado na mesma transação da escrita e só depois enviado ao RabbitMQ.
+
+| Requisito | Código | Documento |
+|---|---|---|
+| Fluxo de ponta a ponta (gateway → BFF → serviços) | [rotas do gateway](infrastructure/docker/gateway/dinamico.yml#L11) · [BFF Web](bffs/bff-web/src/index.ts) · [BFF Admin](bffs/bff-admin/src/index.ts) | [SISTEMA.md §11](SISTEMA.md#11-dois-fluxos-completos-passo-a-passo) |
+| **SAGA** orquestrada (publicação) | [orquestrador](services/oportunidades/src/saga.ts#L51) · [execução dos passos](services/oportunidades/src/saga.ts#L99) | [4.6-saga.md](docs/arquitetura/4.6-saga.md) |
+| **Compensação** da SAGA | [compensar()](services/oportunidades/src/saga.ts#L180) · [compensação de cada passo](services/oportunidades/src/saga.ts#L163) | [4.6-saga.md](docs/arquitetura/4.6-saga.md) |
+| **CQRS** (escrita × leitura) | [projetor do modelo de leitura](services/oportunidades/src/projetor.ts#L37) · [banco de escrita](services/oportunidades/db/escrita.sql) · [banco de leitura](services/oportunidades/db/leitura.sql) | [4.7-cqrs.md](docs/arquitetura/4.7-cqrs.md) |
+| **Outbox** | [tabela outbox](services/oportunidades/db/escrita.sql#L56) · [relay](services/oportunidades/src/relay.ts#L18) | [4.5-dados-outbox.md](docs/arquitetura/4.5-dados-outbox.md) |
+| **Bancos separados** por serviço | [bancos no Compose](docker-compose.yml#L25) | [decisoes-isolamento.md](docs/arquitetura/decisoes-isolamento.md) |
+
+### 6.2 Integração de LLM
+
+O **Assistente** responde perguntas sobre o ConectaU e sobre os editais publicados. No **RAG**, ele transforma os textos em vetores (embeddings), guarda no PostgreSQL com pgvector, busca os trechos mais parecidos com a pergunta e só então pede a resposta ao LLM (Groq), citando as fontes.
+
+Com o **LangChain**, o fluxo é montado em chains, e o agente tem duas **tools** que consultam dados reais do sistema: a base de conhecimento e o catálogo de oportunidades.
+
+Como o LLM é um serviço externo que pode falhar, ele é protegido por **disjuntor**, **retentativa com backoff**, **cache** e **fallback**. Quando o LLM cai, o assistente continua respondendo com os trechos encontrados, sem texto gerado.
+
+| Requisito | Código | Documento |
+|---|---|---|
+| **RAG: ingestão** da base de conhecimento | [ingerirConhecimento()](services/assistente/src/conhecimento.ts#L42) · [documentos da base](services/assistente/conhecimento/) | [rag-e-agente.md](docs/parte-4/rag-e-agente.md) |
+| **RAG: embeddings** | [embeddings.ts](services/assistente/src/embeddings.ts#L33) | [rag-e-agente.md](docs/parte-4/rag-e-agente.md) |
+| **RAG: base vetorial** (pgvector) | [tabelas `vector(384)`](services/assistente/db/init.sql#L17) | [rag-e-agente.md](docs/parte-4/rag-e-agente.md) |
+| **RAG: recuperação** | [recuperar()](services/assistente/src/recuperacao.ts#L40) | [rag-e-agente.md](docs/parte-4/rag-e-agente.md) |
+| **RAG: geração** | [cadeia RAG](services/assistente/src/cadeias.ts#L117) | [rag-e-agente.md](docs/parte-4/rag-e-agente.md) |
+| **Avaliação do RAG** (com × sem recuperação) | [script](scripts/avaliar-rag.mjs) · [perguntas](docs/parte-4/perguntas-avaliacao.json) | [avaliacao-rag.md](docs/parte-4/avaliacao-rag.md) · [análise](docs/parte-4/rag-e-agente.md#9-avaliação-do-rag) |
+| **LangChain: chains** | [RunnableSequence](services/assistente/src/cadeias.ts#L103) | [rag-e-agente.md](docs/parte-4/rag-e-agente.md) |
+| **LangChain: tools** (dados reais do sistema) | [consultar_base_conhecimento](services/assistente/src/ferramentas.ts#L99) · [buscar_oportunidades](services/assistente/src/ferramentas.ts#L127) | [rag-e-agente.md](docs/parte-4/rag-e-agente.md) |
+| Agente (opcional) | [createAgent](services/assistente/src/cadeias.ts#L131) | [rag-e-agente.md](docs/parte-4/rag-e-agente.md) |
+| **Circuit breaker** | [classe Disjuntor](services/assistente/src/resiliencia.ts#L47) | [rag-e-agente.md §7](docs/parte-4/rag-e-agente.md) |
+| **Timeout e retry com backoff** | [comRetentativas()](services/assistente/src/resiliencia.ts#L205) · [timeout](services/assistente/src/llm.ts#L54) | [rag-e-agente.md §7](docs/parte-4/rag-e-agente.md) |
+| **Cache** das respostas | [cache.ts](services/assistente/src/cache.ts#L45) | [rag-e-agente.md §7](docs/parte-4/rag-e-agente.md) |
+| **Fallback** sem o LLM | [fallback de recuperação](services/assistente/src/perguntar.ts#L202) | [rag-e-agente.md §7](docs/parte-4/rag-e-agente.md) |
+| **Latência e custo** | [métricas](services/assistente/src/metricas.ts#L28) · [custo por chamada](services/assistente/src/llm.ts#L81) | [rag-e-agente.md §8](docs/parte-4/rag-e-agente.md#8-latência-e-custo) |
+
+### Partes anteriores
+
+| Parte | Onde |
+|---|---|
+| Parte 2: microsserviços, REST/HATEOAS, gateway, BFF, dados, SAGA, CQRS | [`docs/arquitetura/`](docs/arquitetura/) · [HATEOAS no código](services/oportunidades/src/modelo.ts#L100) |
+| Parte 3: Docker, Compose e Kubernetes | [`docs/infraestrutura.md`](docs/infraestrutura.md) |
+
+---
+
+## 📦 Dockerfiles
+
+Todos os serviços usam **Dockerfile próprio**. Os serviços Node usam **multi-stage build**: compilam numa etapa e levam só o resultado para a imagem final, que fica menor e sem ferramentas de build.
+
+| Componente | Dockerfile | Multi-stage |
+|---|---|---|
+| Identidade | [`services/identidade/Dockerfile`](services/identidade/Dockerfile) | ✔ |
+| Coleta | [`services/coleta/Dockerfile`](services/coleta/Dockerfile) | ✔ |
+| Oportunidades (API e projetor) | [`services/oportunidades/Dockerfile`](services/oportunidades/Dockerfile) | ✔ |
+| Engajamento | [`services/engajamento/Dockerfile`](services/engajamento/Dockerfile) | ✔ |
+| Assistente (RAG + LLM) | [`services/assistente/Dockerfile`](services/assistente/Dockerfile) | ✔ (3 etapas) |
+| BFF Web | [`bffs/bff-web/Dockerfile`](bffs/bff-web/Dockerfile) | ✔ |
+| BFF Admin | [`bffs/bff-admin/Dockerfile`](bffs/bff-admin/Dockerfile) | ✔ |
+| Portal Web (nginx) | [`clients/portal-web/Dockerfile`](clients/portal-web/Dockerfile) | — |
+| Painel Admin (nginx) | [`clients/painel-admin/Dockerfile`](clients/painel-admin/Dockerfile) | — |
+| API Gateway (Traefik) | [`infrastructure/docker/gateway/Dockerfile`](infrastructure/docker/gateway/Dockerfile) | — |
+| PostgreSQL (5 bancos, 1 com pgvector) | [`infrastructure/docker/postgres/Dockerfile`](infrastructure/docker/postgres/Dockerfile) | — |
+| MongoDB (Coleta) | [`infrastructure/docker/mongo/Dockerfile`](infrastructure/docker/mongo/Dockerfile) | — |
+| RabbitMQ | [`infrastructure/docker/rabbitmq/Dockerfile`](infrastructure/docker/rabbitmq/Dockerfile) | — |
 
 ---
 
 ## 🚀 Execução e infraestrutura
 
-A Parte 3 do projeto contempla a conteinerização do serviço de identidade e do banco de dados PostgreSQL, além da orquestração desses componentes utilizando Docker, Docker Compose e Kubernetes.
-
-> 🎥 **Vídeo da entrega 3:** [assista à apresentação no Google Drive](https://drive.google.com/drive/folders/1_DyPLt6FhXqFV3msJlyv8K-zaNSfAilI?usp=sharing)
-
-### Tecnologias utilizadas
-
-- **Docker:** construção das imagens dos serviços.
-- **Docker Compose:** execução integrada dos containers, com redes separadas por camada e volume persistente para o PostgreSQL.
-- **Kubernetes:** gerenciamento dos Pods, Deployments, Services, ConfigMap, Secret, PersistentVolumeClaim e Ingress.
-- **Traefik:** controlador de Ingress utilizado para direcionar as requisições ao serviço de identidade.
-
-### Execução com Docker Compose
-
-Pré-requisitos: Docker Desktop e Docker Compose.
-
-1. Crie o arquivo de variáveis de ambiente:
-
-   ```powershell
-   Copy-Item .env.example .env
-   ```
-
-2. Configure as credenciais no arquivo `.env`.
-
-3. Construa as imagens e inicie os serviços:
-
-   ```powershell
-   docker compose up -d --build
-   ```
-
-4. Verifique os containers:
-
-   ```powershell
-   docker compose ps
-   ```
-
-5. Teste o serviço de identidade:
-
-   ```powershell
-   Invoke-RestMethod http://localhost:3101/health
-   ```
-
-Para encerrar os containers:
+Pré-requisitos: Docker Desktop e as portas 8080, 8081 e 15672 livres.
 
 ```powershell
-docker compose down
+Copy-Item .env.example .env      # depois preencha os valores (GROQ_API_KEY para o LLM)
+docker compose up -d --build
+docker compose ps                 # todos "healthy" em ~1 minuto
 ```
 
-O volume nomeado do PostgreSQL é preservado ao encerrar os containers com esse comando.
-
-### Orquestração com Kubernetes
-
-Pré-requisitos: Docker Desktop com Kubernetes habilitado, `kubectl` configurado e controlador Traefik instalado no cluster.
-
-Construa as imagens utilizadas pelos manifests:
-
-```powershell
-docker build -t conectau-identidade:1.0 -f Dockerfile .
-docker build -t conectau-postgres:latest -f infrastructure/docker/postgres/Dockerfile .
-```
-
-Configure o Secret local a partir do exemplo:
-
-```powershell
-Copy-Item infrastructure/kubernetes/secret.example.yaml infrastructure/kubernetes/secret.yaml
-```
-
-Edite o arquivo `secret.yaml` com as credenciais desejadas. Esse arquivo contém credenciais locais e é ignorado pelo Git; apenas o arquivo `secret.example.yaml`, com valores ilustrativos, é versionado no repositório.
-
-Aplique os manifests:
-
-```powershell
-kubectl apply -f infrastructure/kubernetes/namespace.yaml
-kubectl apply -f infrastructure/kubernetes/secret.yaml
-kubectl apply -f infrastructure/kubernetes/configmap.yaml
-kubectl apply -f infrastructure/kubernetes/postgres.yaml
-kubectl apply -f infrastructure/kubernetes/identidade.yaml
-kubectl apply -f infrastructure/kubernetes/ingress.yaml
-```
-
-Verifique os recursos:
-
-```powershell
-kubectl get all -n conectau
-kubectl get pvc -n conectau
-kubectl get ingress -n conectau
-```
-
-### Acesso ao serviço pelo Ingress
-
-Com o Traefik em execução, abra um terminal e execute:
-
-```powershell
-kubectl port-forward -n traefik service/traefik 8080:80
-```
-
-Em outro terminal, teste o acesso:
-
-```powershell
-Invoke-RestMethod -Uri http://localhost:8080/health -Headers @{ Host = "conectau.local" }
-```
-
-### Demonstração de escalabilidade
-
-Para aumentar o número de réplicas do serviço de identidade:
-
-```powershell
-kubectl scale deployment identidade -n conectau --replicas=3
-```
-
-Verifique os Pods:
-
-```powershell
-kubectl get pods -n conectau
-```
-
-Para retornar à configuração inicial:
-
-```powershell
-kubectl scale deployment identidade -n conectau --replicas=1
-```
-
-### Persistência de dados
-
-A persistência do PostgreSQL foi verificada nos dois ambientes:
-
-- **Docker Compose:** os dados permaneceram disponíveis após a reinicialização do container, utilizando volume nomeado.
-- **Kubernetes:** os dados permaneceram disponíveis após a recriação do Pod PostgreSQL, utilizando PersistentVolumeClaim.
-
----
-
-## 👨‍💻 Equipe
-
-| Integrante | Função |
+| Endereço | O que é |
 |---|---|
-| **Guilherme Alexandre Cunha Silva** | Scrum Master |
-| **Gustavo de Assis Vieira** | Desenvolvedor |
-| **João Vitor Givisiez Lessa** | Desenvolvedor |
-| **Maria Luiza Santos Ferreira** | Product Owner |
+| http://localhost:8080 | **Portal Web** (comunidade) |
+| http://localhost:8080/painel/ | **Painel Admin** (login: `ADMIN_EMAIL` / `ADMIN_SENHA` do `.env`) |
+| http://127.0.0.1:8081 | Painel do Traefik (rotas do gateway) |
+| http://127.0.0.1:15672 | Painel do RabbitMQ |
+
+Instruções completas (Kubernetes, atualização a partir da Parte 3, desenvolvimento): [`docs/README-COMPLETO.md`](docs/README-COMPLETO.md#-execução-e-infraestrutura).
 
 ---
 
-## 📚 Referências
+## ▶️ Roteiro da demonstração
 
-1. **GILANI, David.** *Student attitudes and preferences towards
-   communications from their university – a meta-analysis of student
-   communications research within UK higher education institutions.*
-   Journal of Higher Education Policy and Management, v. 46, n. 3,
-   p. 274–290, 2024.  
-   DOI: 10.1080/1360080X.2024.2344234.
+Comandos na ordem da apresentação (requer Node.js 22 no computador).
 
-2. **SIMPSON, Judith; BRANAGAN, Caitlin; LAU CHENG VON, Vonnie;
-   WILLIAMS, Lily.** *Spamming our students? The use of email as a
-   mass communication tool in higher education.*
-   Journal of Further and Higher Education, p. 152–159, 2025.  
-   DOI: 10.1080/13603108.2024.2440705.
+**1. Fluxo completo automático** (login, curadoria, SAGA com sucesso e com falha, CQRS, feed, favoritos, assistente, falha do LLM):
 
-3. **KULP, Amanda M.; PASCALE, Amanda Blakewood; GRANDSTAFF,
-   Matthew.** *Types of Extracurricular Campus Activities and
-   First-Year Students’ Academic Success.*
-   Journal of College Student Retention: Research, Theory & Practice,
-   v. 23, n. 3, p. 747–767, 2021.  
-   DOI: 10.1177/1521025119876249.
+```powershell
+node scripts/demonstracao.mjs
+```
 
-4. **VAN KESSEL, Gisela et al.** *Relationship between university
-   belonging and student outcomes: A systematic review and
-   meta-analysis.* The Australian Educational Researcher, v. 52,
-   p. 2511–2534, 2025.  
-   DOI: 10.1007/s13384-025-00822-8.
+**2. Falha da SAGA com compensação, ao vivo:** pare o Assistente, publique uma oportunidade no [Painel Admin](http://localhost:8080/painel/) e mostre a compensação. Depois volte o serviço.
 
-5. **UNIVERSIDADE FEDERAL DE LAVRAS (UFLA).**
-   *Divulgação de eventos.* Catálogo de Serviços da UFLA.
+```powershell
+docker compose stop assistente
+docker compose start assistente
+```
+
+**3. CQRS refletindo a escrita** (modelo de leitura):
+
+```powershell
+docker compose exec oportunidades-leitura-db psql -U oportunidades_leitura -c "SELECT titulo, versao, visivel FROM oportunidades_view"
+```
+
+**4. Bancos separados:**
+
+```powershell
+docker compose exec identidade-db psql -U identidade -c "\dt"
+docker compose exec coleta-db mongosh -u root -p --authenticationDatabase admin coleta --eval "db.candidatos.countDocuments()"
+```
+
+**5. LLM como dependência falível** (fallback, disjuntor, latência e custo):
+
+```powershell
+node scripts/falha-llm.mjs on       # derruba o LLM: fallback e, após 3 falhas, circuito aberto
+node scripts/falha-llm.mjs status   # disjuntor, latência, tokens e custo
+node scripts/falha-llm.mjs off
+```
+
+**6. Avaliação do RAG** (com e sem recuperação):
+
+```powershell
+node scripts/avaliar-rag.mjs        # gera docs/parte-4/avaliacao-rag.md
+```

@@ -413,23 +413,47 @@ spec:
                 secretKeyRef:
                   name: conectau-segredos
                   key: TOKEN_SERVICO
+            # Eventos editada/encerrada mantêm o índice dos editais em dia depois da publicação.
+            - name: RABBITMQ_USUARIO
+              valueFrom:
+                secretKeyRef:
+                  name: conectau-segredos
+                  key: RABBITMQ_USUARIO
+            - name: RABBITMQ_SENHA
+              valueFrom:
+                secretKeyRef:
+                  name: conectau-segredos
+                  key: RABBITMQ_SENHA
+            - name: RABBITMQ_URL
+              value: "amqp://$(RABBITMQ_USUARIO):$(RABBITMQ_SENHA)@rabbitmq:5672"
+            # Chave do LLM (Groq). Opcional: sem ela o assistente responde em modo de recuperação.
+            - name: GROQ_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: conectau-segredos
+                  key: GROQ_API_KEY
+                  optional: true
+          # O modelo de embeddings (ONNX) ocupa ~500 MB em memória.
           resources:
             requests:
-              cpu: 50m
-              memory: 64Mi
+              cpu: 100m
+              memory: 512Mi
             limits:
-              memory: 256Mi
+              memory: 1Gi
+          # Pronto só depois de carregar o modelo e ingerir a base de conhecimento.
           readinessProbe:
             httpGet:
               path: /health
               port: 3105
+            initialDelaySeconds: 10
             periodSeconds: 5
+            failureThreshold: 12
           # Liveness só verifica se o processo responde na porta: um banco fora do ar tira o pod
           # do balanceamento (readiness), mas não deve fazer o Kubernetes reiniciá-lo em loop.
           livenessProbe:
             tcpSocket:
               port: 3105
-            initialDelaySeconds: 20
+            initialDelaySeconds: 60
             periodSeconds: 15
             failureThreshold: 4
 ---

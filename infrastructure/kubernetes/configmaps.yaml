@@ -72,6 +72,8 @@ data:
   DB_NOME: "assistente"
   DB_USUARIO: "assistente"
   SIMULAR_FALHA_INDEXACAO: "false"
+  OPORTUNIDADES_URL: "http://oportunidades:3103"
+  GROQ_MODELO: "openai/gpt-oss-120b"
 ---
 apiVersion: v1
 kind: ConfigMap

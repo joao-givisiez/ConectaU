@@ -633,6 +633,13 @@ paths:
     post:
       tags: [Assistente]
       summary: Enviar pergunta e obter resposta com citações
+      description: |
+        Por padrão (modo `agente`), um agente LangChain decide se consulta a base de conhecimento, o
+        catálogo de oportunidades ou nenhum dos dois, e o LLM (Groq) redige a resposta citando as
+        fontes ([F1], [F2]...). Antes do LLM, uma guarda de escopo recusa perguntas fora do tema do
+        ConectaU (`origem: RECUSA`, sem custo). Se o LLM estiver indisponível, a resposta sai em modo
+        degradado (`degradada: true`) com os trechos recuperados. Os modos `rag`, `sem-recuperacao` e
+        `recuperacao` existem para a avaliação do RAG.
       requestBody:
         required: true
         content:
@@ -788,6 +795,68 @@ paths:
         - tokenServico: []
       responses:
         '204': { description: Chunks removidos }
+
+  /internal/llm:
+    get:
+      tags: [Interno]
+      summary: Estado do LLM e métricas de latência, tokens e custo
+      description: |
+        Mostra a configuração do provedor (Groq), o estado do disjuntor (circuit breaker),
+        a simulação de falha ativa e as métricas agregadas das respostas da janela pedida:
+        latência média, p50 e p95, tokens, custo estimado e taxas de cache e de fallback.
+        Usado por `scripts/falha-llm.mjs status` e pela análise de latência e custo da Parte 4.
+      security:
+        - tokenServico: []
+      parameters:
+        - name: horas
+          in: query
+          description: Janela das métricas, em horas.
+          schema: { type: integer, minimum: 1, maximum: 720, default: 24 }
+      responses:
+        '200':
+          description: Estado do LLM com as métricas da janela
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LlmEstadoComMetricas' }
+
+  /internal/llm/simulacao:
+    put:
+      tags: [Interno]
+      summary: Simular falha ou lentidão do provedor de LLM
+      description: |
+        Liga ou desliga uma falha (503) ou uma latência artificial em toda chamada ao provedor,
+        para demonstrar ao vivo o fallback, a retentativa com backoff e a abertura do disjuntor.
+        Só para demonstração. Usado por `scripts/falha-llm.mjs on|off|lento=<ms>`.
+      security:
+        - tokenServico: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SimulacaoLlm' }
+      responses:
+        '200':
+          description: Simulação aplicada; devolve o estado atual do LLM
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LlmEstado' }
+        '400': { $ref: '#/components/responses/RequisicaoInvalida' }
+
+  /internal/conhecimento/reindexar:
+    post:
+      tags: [Interno]
+      summary: Reingerir a base de conhecimento do RAG
+      description: |
+        Relê os documentos de `services/assistente/conhecimento/`, gera os embeddings só dos que
+        mudaram e remove os que foram apagados. Idempotente: sem mudanças, não altera nada.
+      security:
+        - tokenServico: []
+      responses:
+        '200':
+          description: Resumo da ingestão
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReindexacaoResultado' }
 
 security:
   - bearerAuth: []
@@ -1057,6 +1126,65 @@ components:
         chunks: { type: integer, minimum: 0 }
       required: [oportunidadeId, sagaId, chunks]
 
+    SimulacaoLlm:
+      type: object
+      description: Envie só os campos que quer mudar.
+      properties:
+        falha: { type: boolean, description: "true: toda chamada ao provedor falha com 503" }
+        latenciaMs: { type: integer, minimum: 0, maximum: 120000, description: Atraso artificial por chamada }
+
+    LlmEstado:
+      type: object
+      properties:
+        configurado: { type: boolean, description: "GROQ_API_KEY preenchida" }
+        modelo: { type: string, example: openai/gpt-oss-120b }
+        disjuntor:
+          type: object
+          properties:
+            estado: { type: string, enum: [FECHADO, ABERTO, MEIO_ABERTO] }
+            falhasNaJanela: { type: integer }
+            retomadaEmMs: { type: integer }
+            sucessos: { type: integer }
+            falhas: { type: integer }
+            rejeitadas: { type: integer }
+            aberturas: { type: integer }
+        simulacao: { $ref: '#/components/schemas/SimulacaoLlm' }
+      required: [configurado, modelo, disjuntor, simulacao]
+
+    LlmEstadoComMetricas:
+      allOf:
+        - $ref: '#/components/schemas/LlmEstado'
+        - type: object
+          properties:
+            metricas:
+              type: object
+              properties:
+                janelaHoras: { type: integer }
+                respostas: { type: integer }
+                porOrigem:
+                  type: object
+                  properties:
+                    llm: { type: integer }
+                    cache: { type: integer }
+                    fallback: { type: integer }
+                    recusa: { type: integer }
+                taxaDeCache: { type: number }
+                taxaDeFallback: { type: number }
+                custoEstimadoTotalUsd: { type: number }
+                grupos:
+                  type: array
+                  description: Uma linha por origem e modo, com latência (média, p50, p95), tokens e custo.
+                  items: { type: object }
+
+    ReindexacaoResultado:
+      type: object
+      properties:
+        documentos: { type: integer }
+        trechos: { type: integer }
+        atualizados: { type: array, items: { type: string } }
+        removidos: { type: array, items: { type: string } }
+      required: [documentos, trechos, atualizados, removidos]
+
     FonteCriacao:
       type: object
       properties:
@@ -1209,14 +1337,32 @@ components:
       type: object
       properties:
         pergunta: { type: string, maxLength: 2000 }
+        modo:
+          type: string
+          enum: [agente, rag, sem-recuperacao, recuperacao]
+          default: agente
+          description: |
+            agente (padrão): o LLM escolhe as ferramentas. rag: recupera sempre e depois gera.
+            sem-recuperacao: linha de base, o LLM sem dados do ConectaU. recuperacao: só a busca
+            vetorial, sem LLM.
+        semCache: { type: boolean, default: false, description: Ignora o cache de respostas (medições). }
       required: [pergunta]
-    Citacao:
+    Fonte:
       type: object
       properties:
-        oportunidadeId: { type: string, format: uuid }
+        id: { type: string, example: F1, description: Rótulo citado na resposta. }
+        tipo:
+          type: string
+          enum: [CONHECIMENTO, OPORTUNIDADE, CATALOGO]
+          description: Base de conhecimento, edital indexado ou catálogo consultado pela ferramenta.
+        titulo: { type: string }
         trecho: { type: string }
         fonteUrl: { type: string, format: uri }
-      required: [trecho]
+        oportunidadeId: { type: string, format: uuid }
+        documento: { type: string }
+        similaridade: { type: number }
+        citada: { type: boolean, description: O rótulo aparece no texto da resposta. }
+      required: [id, tipo, titulo, trecho, citada]
     Mensagem:
       type: object
       properties:
@@ -1224,14 +1370,51 @@ components:
         conversaId: { type: string, format: uuid }
         pergunta: { type: string }
         resposta: { type: string }
-        citacoes:
+        fontes:
           type: array
-          items: { $ref: '#/components/schemas/Citacao' }
+          items: { $ref: '#/components/schemas/Fonte' }
+        origem:
+          type: string
+          enum: [LLM, CACHE, FALLBACK, RECUSA]
+          description: Quem produziu a resposta.
         degradada:
           type: boolean
-          description: true quando o LLM falhou e só os trechos recuperados foram devolvidos.
+          description: true quando o LLM não respondeu e só os trechos recuperados foram devolvidos.
+        motivoDegradacao:
+          type: string
+          enum: [SEM_CHAVE, CIRCUITO_ABERTO, PROVEDOR_INDISPONIVEL, TEMPO_ESGOTADO, LIMITE_DO_PROVEDOR, CHAVE_INVALIDA, SOLICITADO, ERRO_INESPERADO]
+        modo: { type: string, enum: [agente, rag, sem-recuperacao, recuperacao] }
+        modelo: { type: string, example: openai/gpt-oss-120b }
+        latenciaMs: { type: integer }
+        tokens:
+          type: object
+          properties:
+            entrada: { type: integer }
+            saida: { type: integer }
+        custoEstimadoUsd: { type: number }
+        ferramentas:
+          type: array
+          description: Ferramentas que o agente usou, com a duração de cada uma.
+          items:
+            type: object
+            properties:
+              nome: { type: string }
+              duracaoMs: { type: integer }
+        cache:
+          type: object
+          description: Presente quando a resposta veio do cache.
+          properties:
+            tipo: { type: string, enum: [exato, semantico] }
+            similaridade: { type: number }
+        escopo:
+          type: object
+          description: Decisão da guarda de escopo, tomada antes de qualquer chamada ao LLM.
+          properties:
+            dentro: { type: boolean }
+            motivo: { type: string, enum: [PROXIMA_DA_BASE, CUMPRIMENTO, FORA_DO_DOMINIO, MANIPULACAO] }
+            similaridade: { type: number }
         criadaEm: { type: string, format: date-time }
-      required: [id, conversaId, pergunta, resposta, citacoes, criadaEm]
+      required: [id, conversaId, pergunta, resposta, fontes, origem, degradada, modo, latenciaMs, criadaEm]
 
     ListaOportunidades:
       type: object

@@ -58,6 +58,7 @@ function desenharMenu() {
   const menu = $("#menu");
   if (estado.token) {
     menu.innerHTML = `
+      <button class="secundario" data-acao="assistente">Assistente</button>
       <button class="secundario" data-acao="favoritos">Salvos</button>
       <button class="secundario" data-acao="avisos">Avisos</button>
       <button class="secundario" data-acao="sair">Sair</button>`;
@@ -181,32 +182,107 @@ async function carregarDetalhe(id) {
       ${links.perguntar ? `
       <section class="cartao">
         <h3>Perguntar ao assistente sobre este edital</h3>
-        <form id="form-pergunta">
-          <input name="pergunta" required maxlength="2000" placeholder="Ex.: quais são os requisitos?">
-          <div class="acoes"><button type="submit">Perguntar</button></div>
-        </form>
         <div id="resposta"></div>
+        <form id="form-pergunta" class="busca">
+          <input name="pergunta" required maxlength="2000" placeholder="Ex.: quais são os requisitos?">
+          <button type="submit">Perguntar</button>
+        </form>
       </section>` : ""}`;
 
     const formPergunta = $("#form-pergunta");
     if (formPergunta) {
       let conversaId;
-      formPergunta.addEventListener("submit", async (evento) => {
+      formPergunta.addEventListener("submit", (evento) => {
         evento.preventDefault();
-        const pergunta = new FormData(formPergunta).get("pergunta");
-        try {
+        perguntarAoAssistente(formPergunta, $("#resposta"), async () => {
           conversaId ??= (await api("POST", links.perguntar.href, { oportunidadeId: o.id })).id;
-          const mensagem = await api("POST", `/web/conversas/${conversaId}/mensagens`, { pergunta });
-          $("#resposta").innerHTML = `<p>${esc(mensagem.resposta)}</p>` +
-            mensagem.citacoes.map((c) => `<div class="citacao">${esc(c.trecho)}</div>`).join("");
-        } catch (erro) {
-          avisar(erro.message, true);
-        }
+          return conversaId;
+        });
       });
     }
   } catch (erro) {
     avisar(erro.message, true);
   }
+}
+
+// ---------- Assistente ----------
+
+const ORIGEM_DA_RESPOSTA = {
+  LLM: (m) => `Resposta gerada por IA (${m.modelo ?? "modelo de linguagem"}) a partir das fontes abaixo`,
+  CACHE: () => "Resposta reaproveitada de uma pergunta igual ou parecida (cache)",
+  FALLBACK: () => "Modo degradado: o modelo de linguagem está indisponível, então mostro só os trechos encontrados",
+  RECUSA: () => "Fora do escopo do ConectaU"
+};
+const TIPO_DA_FONTE = { CONHECIMENTO: "Base de conhecimento", OPORTUNIDADE: "Edital", CATALOGO: "Catálogo" };
+
+/** Resposta do assistente: texto com os rótulos [F#] destacados, origem da resposta e fontes citadas. */
+function respostaDoAssistente(m) {
+  const texto = esc(m.resposta)
+    .split(/\n{2,}/)
+    .map((paragrafo) => `<p>${paragrafo.replace(/\n/g, "<br>").replace(/\[(F\d+)\]/g, '<sup class="rotulo">$1</sup>')}</p>`)
+    .join("");
+  const citadas = m.fontes.filter((f) => f.citada);
+  const fontes = citadas.length > 0 ? citadas : m.fontes;
+  const listaDeFontes = fontes.length === 0 ? "" : `
+    <details ${m.origem === "FALLBACK" ? "open" : ""}>
+      <summary>Fontes (${fontes.length})</summary>
+      ${fontes.map((f) => `
+        <div class="citacao fonte${f.oportunidadeId ? " clicavel" : ""}" ${f.oportunidadeId ? `data-oportunidade="${esc(f.oportunidadeId)}"` : ""}>
+          <div class="meta"><span class="rotulo">${esc(f.id)}</span><span class="etiqueta">${TIPO_DA_FONTE[f.tipo] ?? esc(f.tipo)}</span><strong>${esc(f.titulo)}</strong></div>
+          <div>${esc(f.trecho)}</div>
+          ${f.fonteUrl ? `<a href="${esc(f.fonteUrl)}" target="_blank" rel="noopener">Fonte oficial</a>` : ""}
+        </div>`).join("")}
+    </details>`;
+  const selo = (ORIGEM_DA_RESPOSTA[m.origem] ?? (() => ""))(m);
+  return `
+    <div class="resposta-assistente origem-${esc(m.origem.toLowerCase())}">
+      <div class="selo">${esc(selo)}</div>
+      ${texto}
+      ${listaDeFontes}
+      <div class="meta"><span>${m.latenciaMs} ms</span>${m.tokens?.entrada ? `<span>${m.tokens.entrada + m.tokens.saida} tokens</span>` : ""}</div>
+    </div>`;
+}
+
+/** Envia a pergunta e mostra a troca na conversa (a conversa é criada na primeira pergunta). */
+async function perguntarAoAssistente(form, destino, abrirConversa) {
+  const campo = form.querySelector("[name=pergunta]");
+  const pergunta = campo.value.trim();
+  if (!pergunta) return;
+  const botao = form.querySelector("button");
+  botao.disabled = true;
+  destino.insertAdjacentHTML("beforeend", `<div class="pergunta-usuario">${esc(pergunta)}</div><div class="resposta-assistente carregando">Pensando…</div>`);
+  try {
+    const conversaId = await abrirConversa();
+    const mensagem = await api("POST", `/web/conversas/${conversaId}/mensagens`, { pergunta });
+    destino.querySelector(".carregando").outerHTML = respostaDoAssistente(mensagem);
+    campo.value = "";
+  } catch (erro) {
+    destino.querySelector(".carregando")?.remove();
+    avisar(erro.message, true);
+  } finally {
+    botao.disabled = false;
+  }
+}
+
+async function carregarAssistente() {
+  let conversaId;
+  conteudo.innerHTML = `
+    <section class="cartao">
+      <h2>Assistente do ConectaU</h2>
+      <p class="meta">Pergunte sobre oportunidades da UFLA (eventos, atividades, bolsas, projetos e processos seletivos) e sobre como o ConectaU funciona. As respostas citam as fontes; confira sempre o canal oficial.</p>
+      <div id="conversa"></div>
+      <form id="form-assistente" class="busca">
+        <input name="pergunta" required maxlength="2000" placeholder="Ex.: quais bolsas estão abertas em Lavras e quando fecham?">
+        <button type="submit">Perguntar</button>
+      </form>
+    </section>`;
+  $("#form-assistente").addEventListener("submit", (evento) => {
+    evento.preventDefault();
+    perguntarAoAssistente(evento.target, $("#conversa"), async () => {
+      conversaId ??= (await api("POST", "/web/conversas", {})).id;
+      return conversaId;
+    });
+  });
 }
 
 async function carregarFavoritos() {
@@ -243,6 +319,7 @@ async function carregarAvisos() {
 // ---------- Ações ----------
 
 document.addEventListener("click", async (evento) => {
+  if (evento.target.closest("a[target=_blank]")) return; // link externo (fonte oficial): só abre a aba
   const card = evento.target.closest("[data-oportunidade]");
   if (card) return carregarDetalhe(card.dataset.oportunidade);
   const alvo = evento.target.closest("[data-acao]");
@@ -252,6 +329,7 @@ document.addEventListener("click", async (evento) => {
     if (acao === "inicio") { evento.preventDefault(); return carregarFeed(); }
     if (acao === "entrar") { $("#sessao").classList.toggle("oculto"); return; }
     if (acao === "sair") return sair();
+    if (acao === "assistente") return carregarAssistente();
     if (acao === "favoritos") return carregarFavoritos();
     if (acao === "avisos") return carregarAvisos();
     if (acao === "salvar") { await api("POST", "/web/favoritos", { oportunidadeId: id }); avisar("Salvo!"); return carregarDetalhe(id); }

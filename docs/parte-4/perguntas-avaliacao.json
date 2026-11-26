@@ -1,0 +1,95 @@
+{
+  "descricao": "Perguntas de teste da avaliação do RAG do ConectaU. Cada pergunta indica a fonte que deveria ser recuperada (documento da base de conhecimento ou edital) e os fatos que a resposta correta precisa conter. Usado por scripts/avaliar-rag.mjs.",
+  "perguntas": [
+    {
+      "id": "P1",
+      "tipo": "conhecimento",
+      "pergunta": "Com quanto tempo de antecedência o lembrete me avisa se eu não escolher nada?",
+      "fonteEsperada": { "documento": "04-favoritos-lembretes-e-avisos.md" },
+      "fatos": ["48 horas"],
+      "porque": "Regra própria do ConectaU (padrão de 48 horas): um modelo sem recuperação não tem como saber."
+    },
+    {
+      "id": "P2",
+      "tipo": "conhecimento",
+      "pergunta": "O ConectaU faz a minha inscrição na oportunidade?",
+      "fonteEsperada": { "documento": "01-sobre-o-conectau.md" },
+      "fatos": ["canal oficial"],
+      "porque": "Decisão de produto: a inscrição é sempre no canal oficial."
+    },
+    {
+      "id": "P3",
+      "tipo": "conhecimento",
+      "pergunta": "O que acontece com os meus lembretes quando uma oportunidade é encerrada?",
+      "fonteEsperada": { "documento": "04-favoritos-lembretes-e-avisos.md" },
+      "fatos": ["cancel"],
+      "porque": "Comportamento do serviço Engajamento ao receber o evento de encerramento."
+    },
+    {
+      "id": "P4",
+      "tipo": "conhecimento",
+      "pergunta": "Por que uma oportunidade recém-publicada demora um pouco para aparecer na busca?",
+      "fonteEsperada": { "documento": "05-como-as-oportunidades-chegam-a-plataforma.md" },
+      "fatos": ["leitura"],
+      "porque": "Consistência eventual do CQRS: a busca lê o modelo de leitura, atualizado por eventos."
+    },
+    {
+      "id": "P5",
+      "tipo": "conhecimento",
+      "pergunta": "O assistente consegue ver o meu perfil e os meus favoritos?",
+      "fonteEsperada": { "documento": "06-conta-perfil-e-privacidade.md" },
+      "fatos": ["não"],
+      "porque": "Isolamento de dados pessoais: o Assistente não acessa perfil, favoritos nem lembretes."
+    },
+    {
+      "id": "P6",
+      "tipo": "edital",
+      "pergunta": "Qual a nota mínima e a carga horária exigidas no edital de monitoria de Exatas?",
+      "fonteEsperada": { "oportunidade": "Edital de Monitoria" },
+      "fatos": ["7,0", "12 horas"],
+      "porque": "Dados que só existem no texto do edital indexado pela SAGA."
+    },
+    {
+      "id": "P7",
+      "tipo": "edital",
+      "pergunta": "Quantas vagas tem o Workshop de Docker e Kubernetes e o que devo levar?",
+      "fonteEsperada": { "oportunidade": "Workshop de Docker" },
+      "fatos": ["40", "notebook"],
+      "porque": "Dados do edital do workshop."
+    },
+    {
+      "id": "P8",
+      "tipo": "edital",
+      "pergunta": "Quais documentos a bolsa de iniciação científica em agricultura digital pede?",
+      "fonteEsperada": { "oportunidade": "Iniciação Científica em Agricultura Digital" },
+      "fatos": ["histórico", "carta"],
+      "porque": "Lista de documentos do edital da bolsa."
+    },
+    {
+      "id": "P9",
+      "tipo": "catalogo",
+      "pergunta": "Quais bolsas estão com inscrições abertas no campus de Lavras?",
+      "fonteEsperada": { "oportunidade": "Monitoria" },
+      "fatos": ["Monitoria"],
+      "porque": "Depende do catálogo atual: no modo agente deve acionar a ferramenta buscar_oportunidades."
+    },
+    {
+      "id": "P10",
+      "tipo": "nao-consta",
+      "pergunta": "Qual é o valor mensal da bolsa de iniciação científica em agricultura digital?",
+      "fonteEsperada": { "oportunidade": "Iniciação Científica em Agricultura Digital" },
+      "fatos": [],
+      "deveAdmitirQueNaoSabe": true,
+      "porque": "O valor não aparece no edital: a resposta correta é dizer que não encontrou, sem inventar um número."
+    },
+    {
+      "id": "P11",
+      "tipo": "fora-do-escopo",
+      "pergunta": "Me passa uma receita de bolo de cenoura",
+      "fonteEsperada": null,
+      "fatos": [],
+      "deveRecusar": true,
+      "porque": "Fora do escopo do ConectaU: a guarda de escopo deve recusar antes de chamar o LLM, em todos os modos."
+    }
+  ]
+}

@@ -1,0 +1,1354 @@
+{
+  "geradoEm": "2026-11-27T02:21:38.461Z",
+  "base": "http://localhost:8080",
+  "modelo": "openai/gpt-oss-120b",
+  "resultados": [
+    {
+      "pergunta": {
+        "id": "P1",
+        "tipo": "conhecimento",
+        "pergunta": "Com quanto tempo de antecedência o lembrete me avisa se eu não escolher nada?",
+        "fonteEsperada": {
+          "documento": "04-favoritos-lembretes-e-avisos.md"
+        },
+        "fatos": [
+          "48"
+        ],
+        "porque": "Regra própria do ConectaU (padrão de 48 horas): um modelo sem recuperação não tem como saber."
+      },
+      "porModo": {
+        "recuperacao": {
+          "id": "d6c68d8d-51af-4773-b6b1-73819c9a988a",
+          "conversaId": "b646fdaa-3b87-4b27-9090-50e89b1de83f",
+          "pergunta": "Com quanto tempo de antecedência o lembrete me avisa se eu não escolher nada?",
+          "resposta": "Modo de recuperação (sem modelo de linguagem). Estes são os trechos mais relevantes que encontrei:\n\n[F1] Favoritos, lembretes e avisos — Lembretes de prazo: O lembrete serve para não perder o prazo de inscrição. Ao criar um lembrete, você escolhe com quantas horas de antecedência quer ser avisada, de 1 hora até 720 horas, que são 30 dias. Se você não escolher, o ConectaU usa 48 horas, ou seja, dois dias antes do prazo. Cada pessoa tem no máximo um lembrete por oportunidade\n\n[F2] Favoritos, lembretes e avisos — Quando o lembrete dispara: O horário de disparo é o prazo de inscrição menos a antecedência escolhida. Se esse horário já passou, o lembrete dispara imediatamente. Um verificador roda a cada 30 segundos e dispara os lembretes vencidos, gerando um aviso de prazo próximo dentro da plataforma. Depois de disparado, o lembrete não dispara de novo.\n\n[F3] Favoritos, lembretes e avisos — Quando o prazo muda: Se um administrador altera o prazo de inscrição de uma oportunidade publicada, o ConectaU recalcula os lembretes que ainda estão agendados, mantendo a mesma antecedência, e avisa quem favoritou que a oportunidade foi alterada. Assim, o lembrete acompanha o novo prazo sem que a pessoa precise recriá-lo.\n\nConfira os detalhes no canal oficial de cada oportunidade.",
+          "fontes": [
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "Favoritos, lembretes e avisos — Lembretes de prazo",
+              "trecho": "O lembrete serve para não perder o prazo de inscrição. Ao criar um lembrete, você escolhe com quantas horas de antecedência quer ser avisada, de 1 hora até 720 horas, que são 30 dias. Se você não escolher, o ConectaU usa 48 horas, ou seja, dois dias antes do prazo. Cada pessoa tem no máximo um lembrete por oportunidade.",
+              "similaridade": 0.916,
+              "documento": "04-favoritos-lembretes-e-avisos.md",
+              "id": "F1",
+              "citada": true
+            },
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "Favoritos, lembretes e avisos — Quando o lembrete dispara",
+              "trecho": "O horário de disparo é o prazo de inscrição menos a antecedência escolhida. Se esse horário já passou, o lembrete dispara imediatamente. Um verificador roda a cada 30 segundos e dispara os lembretes vencidos, gerando um aviso de prazo próximo dentro da plataforma. Depois de disparado, o lembrete não dispara de novo.",
+              "similaridade": 0.895,
+              "documento": "04-favoritos-lembretes-e-avisos.md",
+              "id": "F2",
+              "citada": true
+            },
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "Favoritos, lembretes e avisos — Quando o prazo muda",
+              "trecho": "Se um administrador altera o prazo de inscrição de uma oportunidade publicada, o ConectaU recalcula os lembretes que ainda estão agendados, mantendo a mesma antecedência, e avisa quem favoritou que a oportunidade foi alterada. Assim, o lembrete acompanha o novo prazo sem que a pessoa precise recriá-lo.",
+              "similaridade": 0.883,
+              "documento": "04-favoritos-lembretes-e-avisos.md",
+              "id": "F3",
+              "citada": true
+            }
+          ],
+          "degradada": true,
+          "motivoDegradacao": "SOLICITADO",
+          "origem": "FALLBACK",
+          "modo": "recuperacao",
+          "latenciaMs": 42,
+          "tokens": {
+            "entrada": 0,
+            "saida": 0
+          },
+          "custoEstimadoUsd": 0,
+          "ferramentas": [],
+          "escopo": {
+            "dentro": true,
+            "motivo": "PROXIMA_DA_BASE",
+            "similaridade": 0.916,
+            "termoDoDominio": true
+          },
+          "criadaEm": "2026-11-27T02:16:15.354Z"
+        },
+        "sem-recuperacao": {
+          "id": "ae98f640-e600-4f45-8af2-2be8f23abca9",
+          "conversaId": "43b5a176-b77b-4d28-9c78-8465a00659b4",
+          "pergunta": "Com quanto tempo de antecedência o lembrete me avisa se eu não escolher nada?",
+          "resposta": "O ConectaU envia o lembrete padrão **24 horas antes** do início da oportunidade caso você não tenha escolhido nenhum horário ou configurado outro aviso.  \n\nSe quiser mudar esse prazo, basta acessar as **configurações de notificações** no seu perfil e definir o tempo de antecedência que preferir (por exemplo, 48 h, 12 h etc.). Caso ainda não tenha ajustado nada, o aviso de 24 h será o que você receberá.",
+          "fontes": [],
+          "degradada": false,
+          "origem": "LLM",
+          "modo": "sem-recuperacao",
+          "modelo": "openai/gpt-oss-120b",
+          "latenciaMs": 808,
+          "tokens": {
+            "entrada": 203,
+            "saida": 155
+          },
+          "custoEstimadoUsd": 0.00012345,
+          "ferramentas": [],
+          "escopo": {
+            "dentro": true,
+            "motivo": "PROXIMA_DA_BASE",
+            "similaridade": 0.916,
+            "termoDoDominio": true
+          },
+          "criadaEm": "2026-11-27T02:16:23.209Z"
+        },
+        "rag": {
+          "id": "b31400bc-cc88-453d-899e-6e87709891b9",
+          "conversaId": "3d11c6eb-9720-4776-88db-a10e65de6ae6",
+          "pergunta": "Com quanto tempo de antecedência o lembrete me avisa se eu não escolher nada?",
+          "resposta": "Se você não escolher um tempo de antecedência, o ConectaU usa **48 horas** (ou seja, dois dias) antes do prazo de inscrição. [F1]",
+          "fontes": [
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "Favoritos, lembretes e avisos — Lembretes de prazo",
+              "trecho": "O lembrete serve para não perder o prazo de inscrição. Ao criar um lembrete, você escolhe com quantas horas de antecedência quer ser avisada, de 1 hora até 720 horas, que são 30 dias. Se você não escolher, o ConectaU usa 48 horas, ou seja, dois dias antes do prazo. Cada pessoa tem no máximo um lembrete por oportunidade.",
+              "similaridade": 0.916,
+              "documento": "04-favoritos-lembretes-e-avisos.md",
+              "id": "F1",
+              "citada": true
+            },
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "Favoritos, lembretes e avisos — Quando o lembrete dispara",
+              "trecho": "O horário de disparo é o prazo de inscrição menos a antecedência escolhida. Se esse horário já passou, o lembrete dispara imediatamente. Um verificador roda a cada 30 segundos e dispara os lembretes vencidos, gerando um aviso de prazo próximo dentro da plataforma. Depois de disparado, o lembrete não dispara de novo.",
+              "similaridade": 0.895,
+              "documento": "04-favoritos-lembretes-e-avisos.md",
+              "id": "F2",
+              "citada": false
+            },
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "Favoritos, lembretes e avisos — Quando o prazo muda",
+              "trecho": "Se um administrador altera o prazo de inscrição de uma oportunidade publicada, o ConectaU recalcula os lembretes que ainda estão agendados, mantendo a mesma antecedência, e avisa quem favoritou que a oportunidade foi alterada. Assim, o lembrete acompanha o novo prazo sem que a pessoa precise recriá-lo.",
+              "similaridade": 0.883,
+              "documento": "04-favoritos-lembretes-e-avisos.md",
+              "id": "F3",
+              "citada": false
+            },
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "Favoritos, lembretes e avisos — Quando a oportunidade é encerrada",
+              "trecho": "Ao encerrar uma oportunidade, os lembretes ainda agendados dela são cancelados, ela some da busca pública e quem a favoritou recebe um aviso de encerramento. A oportunidade continua no histórico do administrador, mas não aparece mais para a comunidade.",
+              "similaridade": 0.877,
+              "documento": "04-favoritos-lembretes-e-avisos.md",
+              "id": "F4",
+              "citada": false
+            },
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "Favoritos, lembretes e avisos — Tipos de aviso",
+              "trecho": "Os avisos aparecem dentro da plataforma, na área de avisos, e podem ser marcados como lidos. Existem três tipos: - **Prazo próximo:** gerado quando o lembrete dispara, dizendo que o prazo de inscrição se aproxima. - **Oportunidade alterada:** gerado para quem favoritou, quando o prazo ou outro dado da oportunidade muda. - **Oportunidade encerrada:** gerado para quem favoritou, quando a oportunida…",
+              "similaridade": 0.873,
+              "documento": "04-favoritos-lembretes-e-avisos.md",
+              "id": "F5",
+              "citada": false
+            }
+          ],
+          "degradada": false,
+          "origem": "LLM",
+          "modo": "rag",
+          "modelo": "openai/gpt-oss-120b",
+          "latenciaMs": 564,
+          "tokens": {
+            "entrada": 792,
+            "saida": 82
+          },
+          "custoEstimadoUsd": 0.000168,
+          "ferramentas": [],
+          "escopo": {
+            "dentro": true,
+            "motivo": "PROXIMA_DA_BASE",
+            "similaridade": 0.916,
+            "termoDoDominio": true
+          },
+          "criadaEm": "2026-11-27T02:16:38.820Z"
+        }
+      },
+      "avaliacao": {
+        "recuperacao": {
+          "usouLlm": false,
+          "recusou": false,
+          "fatosCobertos": 1,
+          "fatosTotal": 1,
+          "citou": true,
+          "admitiuNaoSaber": false,
+          "posicao": 1,
+          "inventouValor": false
+        },
+        "sem-recuperacao": {
+          "usouLlm": true,
+          "recusou": false,
+          "fatosCobertos": 1,
+          "fatosTotal": 1,
+          "citou": false,
+          "admitiuNaoSaber": false,
+          "posicao": null,
+          "inventouValor": false
+        },
+        "rag": {
+          "usouLlm": true,
+          "recusou": false,
+          "fatosCobertos": 1,
+          "fatosTotal": 1,
+          "citou": true,
+          "admitiuNaoSaber": false,
+          "posicao": 1,
+          "inventouValor": false
+        }
+      }
+    },
+    {
+      "pergunta": {
+        "id": "P6",
+        "tipo": "edital",
+        "pergunta": "Qual a nota mínima e a carga horária exigidas no edital de monitoria de Exatas?",
+        "fonteEsperada": {
+          "oportunidade": "Edital de Monitoria"
+        },
+        "fatos": [
+          "7,0",
+          "12 horas"
+        ],
+        "porque": "Dados que só existem no texto do edital indexado pela SAGA."
+      },
+      "porModo": {
+        "recuperacao": {
+          "id": "a36feda2-d43b-4300-a755-9a942ae56133",
+          "conversaId": "98120591-1a3e-4060-9ef1-8544ca88216b",
+          "pergunta": "Qual a nota mínima e a carga horária exigidas no edital de monitoria de Exatas?",
+          "resposta": "Modo de recuperação (sem modelo de linguagem). Estes são os trechos mais relevantes que encontrei:\n\n[F1] Edital de Monitoria — disciplinas de Exatas: Edital de Monitoria — disciplinas de Exatas Seleção de monitores bolsistas e voluntários. Requisitos: ter cursado a disciplina com nota mínima 7,0 e disponibilidade de 12 horas semanais. A bolsa é paga por 4 meses. Inscrição pelo sistema acadêmico. Categoria: BOLSA. Campus: LAVRAS. Início: 2026-12-16. Prazo de inscriçã\n\n[F2] Como participar de uma oportunidade — O que costuma ser pedido: Os documentos variam por edital, mas é comum pedirem histórico escolar, comprovante de matrícula, carta de interesse, currículo e, em seleções de monitoria, a nota obtida na disciplina. Alguns editais exigem número mínimo de horas semanais de dedicação. Confira sempre a lista completa no edital oficial.\n\n[F3] Glossário acadêmico — Monitoria: Monitoria é o apoio de estudantes a uma disciplina, ajudando colegas em dúvidas, listas de exercícios e atividades práticas. O monitor costuma ter sido aprovado na disciplina com nota mínima definida no edital. Pode ser remunerada (bolsista) ou voluntária.\n\nConfira os detalhes no canal oficial de cada oportunidade.",
+          "fontes": [
+            {
+              "tipo": "OPORTUNIDADE",
+              "titulo": "Edital de Monitoria — disciplinas de Exatas",
+              "trecho": "Edital de Monitoria — disciplinas de Exatas Seleção de monitores bolsistas e voluntários. Requisitos: ter cursado a disciplina com nota mínima 7,0 e disponibilidade de 12 horas semanais. A bolsa é paga por 4 meses. Inscrição pelo sistema acadêmico. Categoria: BOLSA. Campus: LAVRAS. Início: 2026-12-16. Prazo de inscrição: 2026-12-11.",
+              "similaridade": 0.921,
+              "fonteUrl": "https://ufla.br/",
+              "oportunidadeId": "54e0e168-2778-4302-a956-7a99b56d1eb7",
+              "id": "F1",
+              "citada": true
+            },
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "Como participar de uma oportunidade — O que costuma ser pedido",
+              "trecho": "Os documentos variam por edital, mas é comum pedirem histórico escolar, comprovante de matrícula, carta de interesse, currículo e, em seleções de monitoria, a nota obtida na disciplina. Alguns editais exigem número mínimo de horas semanais de dedicação. Confira sempre a lista completa no edital oficial.",
+              "similaridade": 0.864,
+              "documento": "03-como-participar-de-uma-oportunidade.md",
+              "id": "F2",
+              "citada": true
+            },
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "Glossário acadêmico — Monitoria",
+              "trecho": "Monitoria é o apoio de estudantes a uma disciplina, ajudando colegas em dúvidas, listas de exercícios e atividades práticas. O monitor costuma ter sido aprovado na disciplina com nota mínima definida no edital. Pode ser remunerada (bolsista) ou voluntária.",
+              "similaridade": 0.844,
+              "documento": "08-glossario-academico.md",
+              "id": "F3",
+              "citada": true
+            }
+          ],
+          "degradada": true,
+          "motivoDegradacao": "SOLICITADO",
+          "origem": "FALLBACK",
+          "modo": "recuperacao",
+          "latenciaMs": 45,
+          "tokens": {
+            "entrada": 0,
+            "saida": 0
+          },
+          "custoEstimadoUsd": 0,
+          "ferramentas": [],
+          "escopo": {
+            "dentro": true,
+            "motivo": "PROXIMA_DA_BASE",
+            "similaridade": 0.921,
+            "termoDoDominio": true
+          },
+          "criadaEm": "2026-11-27T02:16:53.906Z"
+        },
+        "sem-recuperacao": {
+          "id": "451d4efb-1743-4c84-9f06-b17bca703895",
+          "conversaId": "4ec9d1b8-4545-4c02-a6cc-fb6ae9434ec6",
+          "pergunta": "Qual a nota mínima e a carga horária exigidas no edital de monitoria de Exatas?",
+          "resposta": "Desculpe, mas não tenho acesso ao edital específico de monitoria de Exatas da UFLA, portanto não consigo informar a nota mínima nem a carga horária exigidas. Recomendo consultar o edital oficial publicado no site da UFLA ou entrar em contato com a coordenação do curso para obter esses detalhes.",
+          "fontes": [],
+          "degradada": false,
+          "origem": "LLM",
+          "modo": "sem-recuperacao",
+          "modelo": "openai/gpt-oss-120b",
+          "latenciaMs": 624,
+          "tokens": {
+            "entrada": 205,
+            "saida": 82
+          },
+          "custoEstimadoUsd": 0.00007995,
+          "ferramentas": [],
+          "escopo": {
+            "dentro": true,
+            "motivo": "PROXIMA_DA_BASE",
+            "similaridade": 0.921,
+            "termoDoDominio": true
+          },
+          "criadaEm": "2026-11-27T02:17:01.579Z"
+        },
+        "rag": {
+          "id": "37d7d6cd-beb8-4e27-9732-8b11992e9aa0",
+          "conversaId": "cfc6465f-c9f5-47bd-8c1e-91fc29c033b2",
+          "pergunta": "Qual a nota mínima e a carga horária exigidas no edital de monitoria de Exatas?",
+          "resposta": "A nota mínima exigida é **7,0** e a carga horária requerida é **12 horas semanais** de disponibilidade [​F1].",
+          "fontes": [
+            {
+              "tipo": "OPORTUNIDADE",
+              "titulo": "Edital de Monitoria — disciplinas de Exatas",
+              "trecho": "Edital de Monitoria — disciplinas de Exatas Seleção de monitores bolsistas e voluntários. Requisitos: ter cursado a disciplina com nota mínima 7,0 e disponibilidade de 12 horas semanais. A bolsa é paga por 4 meses. Inscrição pelo sistema acadêmico. Categoria: BOLSA. Campus: LAVRAS. Início: 2026-12-16. Prazo de inscrição: 2026-12-11.",
+              "similaridade": 0.921,
+              "fonteUrl": "https://ufla.br/",
+              "oportunidadeId": "54e0e168-2778-4302-a956-7a99b56d1eb7",
+              "id": "F1",
+              "citada": false
+            },
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "Como participar de uma oportunidade — O que costuma ser pedido",
+              "trecho": "Os documentos variam por edital, mas é comum pedirem histórico escolar, comprovante de matrícula, carta de interesse, currículo e, em seleções de monitoria, a nota obtida na disciplina. Alguns editais exigem número mínimo de horas semanais de dedicação. Confira sempre a lista completa no edital oficial.",
+              "similaridade": 0.864,
+              "documento": "03-como-participar-de-uma-oportunidade.md",
+              "id": "F2",
+              "citada": false
+            },
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "Glossário acadêmico — Monitoria",
+              "trecho": "Monitoria é o apoio de estudantes a uma disciplina, ajudando colegas em dúvidas, listas de exercícios e atividades práticas. O monitor costuma ter sido aprovado na disciplina com nota mínima definida no edital. Pode ser remunerada (bolsista) ou voluntária.",
+              "similaridade": 0.844,
+              "documento": "08-glossario-academico.md",
+              "id": "F3",
+              "citada": false
+            },
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "O assistente do ConectaU e seus limites — O que o assistente não faz",
+              "trecho": "- Não realiza inscrições nem acessa sistemas da universidade; a inscrição é feita no canal oficial. - Não inventa datas, valores de bolsa, requisitos ou links. Se não encontra a informação, diz que não encontrou e orienta a conferir o canal oficial. - Não conhece o seu perfil, os seus favoritos nem os seus lembretes. - Não responde sobre assuntos fora de oportunidades acadêmicas e do ConectaU. - …",
+              "similaridade": 0.829,
+              "documento": "07-assistente-e-seus-limites.md",
+              "id": "F4",
+              "citada": false
+            },
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "O assistente do ConectaU e seus limites — Dicas para fazer boas perguntas",
+              "trecho": "Seja específica e inclua o contexto, como o campus, a categoria ou o nome da oportunidade. Em vez de \"tem bolsa?\", pergunte \"quais bolsas estão abertas no campus de Lavras e quando fecham?\". Para tirar dúvidas de um edital, abra a oportunidade e pergunte dentro dela: a conversa fica limitada ao texto daquela oportunidade. Para dúvidas gerais, use a aba do assistente.",
+              "similaridade": 0.827,
+              "documento": "07-assistente-e-seus-limites.md",
+              "id": "F5",
+              "citada": false
+            }
+          ],
+          "degradada": false,
+          "origem": "LLM",
+          "modo": "rag",
+          "modelo": "openai/gpt-oss-120b",
+          "latenciaMs": 583,
+          "tokens": {
+            "entrada": 791,
+            "saida": 75
+          },
+          "custoEstimadoUsd": 0.00016365,
+          "ferramentas": [],
+          "escopo": {
+            "dentro": true,
+            "motivo": "PROXIMA_DA_BASE",
+            "similaridade": 0.921,
+            "termoDoDominio": true
+          },
+          "criadaEm": "2026-11-27T02:17:17.207Z"
+        },
+        "agente": {
+          "id": "e69e28dd-993c-48a8-ad53-c7b74c3ea806",
+          "conversaId": "be26b394-89f5-4908-ad8b-5b93e8c8e88b",
+          "pergunta": "Qual a nota mínima e a carga horária exigidas no edital de monitoria de Exatas?",
+          "resposta": "A nota mínima exigida para ser monitor nas disciplinas de Exatas é **7,0** e a carga horária requerida é **12 horas semanais** de disponibilidade 【F1】.",
+          "fontes": [
+            {
+              "tipo": "OPORTUNIDADE",
+              "titulo": "Edital de Monitoria — disciplinas de Exatas",
+              "trecho": "Edital de Monitoria — disciplinas de Exatas Seleção de monitores bolsistas e voluntários. Requisitos: ter cursado a disciplina com nota mínima 7,0 e disponibilidade de 12 horas semanais. A bolsa é paga por 4 meses. Inscrição pelo sistema acadêmico. Categoria: BOLSA. Campus: LAVRAS. Início: 2026-12-16. Prazo de inscrição: 2026-12-11.",
+              "similaridade": 0.918,
+              "fonteUrl": "https://ufla.br/",
+              "oportunidadeId": "54e0e168-2778-4302-a956-7a99b56d1eb7",
+              "id": "F1",
+              "citada": false
+            },
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "Como participar de uma oportunidade — O que costuma ser pedido",
+              "trecho": "Os documentos variam por edital, mas é comum pedirem histórico escolar, comprovante de matrícula, carta de interesse, currículo e, em seleções de monitoria, a nota obtida na disciplina. Alguns editais exigem número mínimo de horas semanais de dedicação. Confira sempre a lista completa no edital oficial.",
+              "similaridade": 0.875,
+              "documento": "03-como-participar-de-uma-oportunidade.md",
+              "id": "F2",
+              "citada": false
+            },
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "Favoritos, lembretes e avisos — Lembretes de prazo",
+              "trecho": "O lembrete serve para não perder o prazo de inscrição. Ao criar um lembrete, você escolhe com quantas horas de antecedência quer ser avisada, de 1 hora até 720 horas, que são 30 dias. Se você não escolher, o ConectaU usa 48 horas, ou seja, dois dias antes do prazo. Cada pessoa tem no máximo um lembrete por oportunidade.",
+              "similaridade": 0.841,
+              "documento": "04-favoritos-lembretes-e-avisos.md",
+              "id": "F3",
+              "citada": false
+            },
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "O assistente do ConectaU e seus limites — O que o assistente não faz",
+              "trecho": "- Não realiza inscrições nem acessa sistemas da universidade; a inscrição é feita no canal oficial. - Não inventa datas, valores de bolsa, requisitos ou links. Se não encontra a informação, diz que não encontrou e orienta a conferir o canal oficial. - Não conhece o seu perfil, os seus favoritos nem os seus lembretes. - Não responde sobre assuntos fora de oportunidades acadêmicas e do ConectaU. - …",
+              "similaridade": 0.841,
+              "documento": "07-assistente-e-seus-limites.md",
+              "id": "F4",
+              "citada": false
+            },
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "Glossário acadêmico — Monitoria",
+              "trecho": "Monitoria é o apoio de estudantes a uma disciplina, ajudando colegas em dúvidas, listas de exercícios e atividades práticas. O monitor costuma ter sido aprovado na disciplina com nota mínima definida no edital. Pode ser remunerada (bolsista) ou voluntária.",
+              "similaridade": 0.84,
+              "documento": "08-glossario-academico.md",
+              "id": "F5",
+              "citada": false
+            }
+          ],
+          "degradada": false,
+          "origem": "LLM",
+          "modo": "agente",
+          "modelo": "openai/gpt-oss-120b",
+          "latenciaMs": 1024,
+          "tokens": {
+            "entrada": 2613,
+            "saida": 125
+          },
+          "custoEstimadoUsd": 0.00046695,
+          "ferramentas": [
+            {
+              "nome": "consultar_base_conhecimento",
+              "duracaoMs": 12
+            }
+          ],
+          "escopo": {
+            "dentro": true,
+            "motivo": "PROXIMA_DA_BASE",
+            "similaridade": 0.921,
+            "termoDoDominio": true
+          },
+          "criadaEm": "2026-11-27T02:17:33.275Z"
+        }
+      },
+      "avaliacao": {
+        "recuperacao": {
+          "usouLlm": false,
+          "recusou": false,
+          "fatosCobertos": 2,
+          "fatosTotal": 2,
+          "citou": true,
+          "admitiuNaoSaber": false,
+          "posicao": 1,
+          "inventouValor": false
+        },
+        "sem-recuperacao": {
+          "usouLlm": true,
+          "recusou": false,
+          "fatosCobertos": 0,
+          "fatosTotal": 2,
+          "citou": false,
+          "admitiuNaoSaber": false,
+          "posicao": null,
+          "inventouValor": false
+        },
+        "rag": {
+          "usouLlm": true,
+          "recusou": false,
+          "fatosCobertos": 1,
+          "fatosTotal": 2,
+          "citou": false,
+          "admitiuNaoSaber": false,
+          "posicao": 1,
+          "inventouValor": false
+        },
+        "agente": {
+          "usouLlm": true,
+          "recusou": false,
+          "fatosCobertos": 1,
+          "fatosTotal": 2,
+          "citou": false,
+          "admitiuNaoSaber": false,
+          "posicao": 1,
+          "inventouValor": false
+        }
+      }
+    },
+    {
+      "pergunta": {
+        "id": "P7",
+        "tipo": "edital",
+        "pergunta": "Quantas vagas tem o Workshop de Docker e Kubernetes e o que devo levar?",
+        "fonteEsperada": {
+          "oportunidade": "Workshop de Docker"
+        },
+        "fatos": [
+          "40",
+          "notebook"
+        ],
+        "porque": "Dados do edital do workshop."
+      },
+      "porModo": {
+        "recuperacao": {
+          "id": "9920d708-afd3-4019-a363-23ec20362111",
+          "conversaId": "df037250-75f8-460f-9daa-c9f495fa5332",
+          "pergunta": "Quantas vagas tem o Workshop de Docker e Kubernetes e o que devo levar?",
+          "resposta": "Modo de recuperação (sem modelo de linguagem). Estes são os trechos mais relevantes que encontrei:\n\n[F1] Workshop de Docker e Kubernetes: Workshop de Docker e Kubernetes Workshop prático sobre containers e orquestração para a comunidade acadêmica. Inscrições gratuitas, vagas limitadas a 40 participantes. Traga seu notebook com Docker instalado. Categoria: EVENTO. Campus: LAVRAS. Início: 2026-12-16. Prazo de inscrição: 2026-12-11.\n\n[F2] Como participar de uma oportunidade — O que costuma ser pedido: Os documentos variam por edital, mas é comum pedirem histórico escolar, comprovante de matrícula, carta de interesse, currículo e, em seleções de monitoria, a nota obtida na disciplina. Alguns editais exigem número mínimo de horas semanais de dedicação. Confira sempre a lista completa no edital oficial.\n\n[F3] Sobre o ConectaU — O que a pessoa consegue fazer na plataforma: - Criar uma conta informando curso, campus e interesses. - Ver um feed de oportunidades filtrado pelo campus e pelos interesses do perfil. - Buscar por palavras e filtrar por categoria e campus. - Salvar oportunidades como favoritas. - Criar lembretes para ser avisada antes do prazo de inscrição. - Receber avisos dentr\n\nConfira os detalhes no canal oficial de cada oportunidade.",
+          "fontes": [
+            {
+              "tipo": "OPORTUNIDADE",
+              "titulo": "Workshop de Docker e Kubernetes",
+              "trecho": "Workshop de Docker e Kubernetes Workshop prático sobre containers e orquestração para a comunidade acadêmica. Inscrições gratuitas, vagas limitadas a 40 participantes. Traga seu notebook com Docker instalado. Categoria: EVENTO. Campus: LAVRAS. Início: 2026-12-16. Prazo de inscrição: 2026-12-11.",
+              "similaridade": 0.914,
+              "fonteUrl": "https://ufla.br/",
+              "oportunidadeId": "62881f01-bad1-4b77-a68c-2599c3a2415f",
+              "id": "F1",
+              "citada": true
+            },
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "Como participar de uma oportunidade — O que costuma ser pedido",
+              "trecho": "Os documentos variam por edital, mas é comum pedirem histórico escolar, comprovante de matrícula, carta de interesse, currículo e, em seleções de monitoria, a nota obtida na disciplina. Alguns editais exigem número mínimo de horas semanais de dedicação. Confira sempre a lista completa no edital oficial.",
+              "similaridade": 0.853,
+              "documento": "03-como-participar-de-uma-oportunidade.md",
+              "id": "F2",
+              "citada": true
+            },
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "Sobre o ConectaU — O que a pessoa consegue fazer na plataforma",
+              "trecho": "- Criar uma conta informando curso, campus e interesses. - Ver um feed de oportunidades filtrado pelo campus e pelos interesses do perfil. - Buscar por palavras e filtrar por categoria e campus. - Salvar oportunidades como favoritas. - Criar lembretes para ser avisada antes do prazo de inscrição. - Receber avisos dentro da plataforma quando um prazo se aproxima, quando uma oportunidade salva é al…",
+              "similaridade": 0.85,
+              "documento": "01-sobre-o-conectau.md",
+              "id": "F3",
+              "citada": true
+            }
+          ],
+          "degradada": true,
+          "motivoDegradacao": "SOLICITADO",
+          "origem": "FALLBACK",
+          "modo": "recuperacao",
+          "latenciaMs": 33,
+          "tokens": {
+            "entrada": 0,
+            "saida": 0
+          },
+          "custoEstimadoUsd": 0,
+          "ferramentas": [],
+          "escopo": {
+            "dentro": true,
+            "motivo": "PROXIMA_DA_BASE",
+            "similaridade": 0.914,
+            "termoDoDominio": true
+          },
+          "criadaEm": "2026-11-27T02:18:03.349Z"
+        },
+        "sem-recuperacao": {
+          "id": "0a3b876c-7639-4fdc-88bc-73c9c7874340",
+          "conversaId": "61d1ebf7-fddd-41b4-a365-0706daaf0d13",
+          "pergunta": "Quantas vagas tem o Workshop de Docker e Kubernetes e o que devo levar?",
+          "resposta": "Desculpe, mas não tenho informações específicas sobre o número de vagas nem sobre o que levar para o Workshop de Docker e Kubernetes. Recomendo consultar o anúncio oficial da oportunidade (site, redes sociais ou canal de comunicação da UFLA) para obter esses detalhes.",
+          "fontes": [],
+          "degradada": false,
+          "origem": "LLM",
+          "modo": "sem-recuperacao",
+          "modelo": "openai/gpt-oss-120b",
+          "latenciaMs": 532,
+          "tokens": {
+            "entrada": 201,
+            "saida": 73
+          },
+          "custoEstimadoUsd": 0.00007395,
+          "ferramentas": [],
+          "escopo": {
+            "dentro": true,
+            "motivo": "PROXIMA_DA_BASE",
+            "similaridade": 0.914,
+            "termoDoDominio": true
+          },
+          "criadaEm": "2026-11-27T02:18:10.928Z"
+        },
+        "rag": {
+          "id": "2400d08d-207b-4ff8-bc0e-310100831d1a",
+          "conversaId": "1e589b12-4349-4cb9-aa94-d0c28579a505",
+          "pergunta": "Quantas vagas tem o Workshop de Docker e Kubernetes e o que devo levar?",
+          "resposta": "O Workshop de Docker e Kubernetes tem **40 vagas** disponíveis.  \nPara participar, é necessário **trazer o notebook com o Docker já instalado**.  \n\nFonte: [F1]",
+          "fontes": [
+            {
+              "tipo": "OPORTUNIDADE",
+              "titulo": "Workshop de Docker e Kubernetes",
+              "trecho": "Workshop de Docker e Kubernetes Workshop prático sobre containers e orquestração para a comunidade acadêmica. Inscrições gratuitas, vagas limitadas a 40 participantes. Traga seu notebook com Docker instalado. Categoria: EVENTO. Campus: LAVRAS. Início: 2026-12-16. Prazo de inscrição: 2026-12-11.",
+              "similaridade": 0.914,
+              "fonteUrl": "https://ufla.br/",
+              "oportunidadeId": "62881f01-bad1-4b77-a68c-2599c3a2415f",
+              "id": "F1",
+              "citada": true
+            },
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "Como participar de uma oportunidade — O que costuma ser pedido",
+              "trecho": "Os documentos variam por edital, mas é comum pedirem histórico escolar, comprovante de matrícula, carta de interesse, currículo e, em seleções de monitoria, a nota obtida na disciplina. Alguns editais exigem número mínimo de horas semanais de dedicação. Confira sempre a lista completa no edital oficial.",
+              "similaridade": 0.853,
+              "documento": "03-como-participar-de-uma-oportunidade.md",
+              "id": "F2",
+              "citada": false
+            },
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "Sobre o ConectaU — O que a pessoa consegue fazer na plataforma",
+              "trecho": "- Criar uma conta informando curso, campus e interesses. - Ver um feed de oportunidades filtrado pelo campus e pelos interesses do perfil. - Buscar por palavras e filtrar por categoria e campus. - Salvar oportunidades como favoritas. - Criar lembretes para ser avisada antes do prazo de inscrição. - Receber avisos dentro da plataforma quando um prazo se aproxima, quando uma oportunidade salva é al…",
+              "similaridade": 0.85,
+              "documento": "01-sobre-o-conectau.md",
+              "id": "F3",
+              "citada": false
+            },
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "Categorias de oportunidade — Como escolher a categoria na busca",
+              "trecho": "Para encontrar dinheiro e vínculo longo, procure por bolsa e projeto. Para conhecer a área e acumular certificados, procure por evento. Para entrar em grupos estudantis, procure por processo seletivo. Para participar de ações abertas e contínuas, procure por atividade. Uma mesma oportunidade não muda de categoria; se a categoria parecer errada, avise a equipe do ConectaU.",
+              "similaridade": 0.844,
+              "documento": "02-categorias-de-oportunidade.md",
+              "id": "F4",
+              "citada": false
+            },
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "O assistente do ConectaU e seus limites — Dicas para fazer boas perguntas",
+              "trecho": "Seja específica e inclua o contexto, como o campus, a categoria ou o nome da oportunidade. Em vez de \"tem bolsa?\", pergunte \"quais bolsas estão abertas no campus de Lavras e quando fecham?\". Para tirar dúvidas de um edital, abra a oportunidade e pergunte dentro dela: a conversa fica limitada ao texto daquela oportunidade. Para dúvidas gerais, use a aba do assistente.",
+              "similaridade": 0.843,
+              "documento": "07-assistente-e-seus-limites.md",
+              "id": "F5",
+              "citada": false
+            }
+          ],
+          "degradada": false,
+          "origem": "LLM",
+          "modo": "rag",
+          "modelo": "openai/gpt-oss-120b",
+          "latenciaMs": 673,
+          "tokens": {
+            "entrada": 790,
+            "saida": 88
+          },
+          "custoEstimadoUsd": 0.0001713,
+          "ferramentas": [],
+          "escopo": {
+            "dentro": true,
+            "motivo": "PROXIMA_DA_BASE",
+            "similaridade": 0.914,
+            "termoDoDominio": true
+          },
+          "criadaEm": "2026-11-27T02:18:26.631Z"
+        }
+      },
+      "avaliacao": {
+        "recuperacao": {
+          "usouLlm": false,
+          "recusou": false,
+          "fatosCobertos": 2,
+          "fatosTotal": 2,
+          "citou": true,
+          "admitiuNaoSaber": false,
+          "posicao": 1,
+          "inventouValor": false
+        },
+        "sem-recuperacao": {
+          "usouLlm": true,
+          "recusou": false,
+          "fatosCobertos": 0,
+          "fatosTotal": 2,
+          "citou": false,
+          "admitiuNaoSaber": true,
+          "posicao": null,
+          "inventouValor": false
+        },
+        "rag": {
+          "usouLlm": true,
+          "recusou": false,
+          "fatosCobertos": 2,
+          "fatosTotal": 2,
+          "citou": true,
+          "admitiuNaoSaber": false,
+          "posicao": 1,
+          "inventouValor": false
+        }
+      }
+    },
+    {
+      "pergunta": {
+        "id": "P9",
+        "tipo": "catalogo",
+        "pergunta": "Quais bolsas estão com inscrições abertas no campus de Lavras?",
+        "fonteEsperada": {
+          "oportunidade": "Monitoria"
+        },
+        "fatos": [
+          "Monitoria"
+        ],
+        "porque": "Depende do catálogo atual: no modo agente deve acionar a ferramenta buscar_oportunidades."
+      },
+      "porModo": {
+        "recuperacao": {
+          "id": "032fae78-c91c-4037-bb4d-dc1840237a7b",
+          "conversaId": "3765dcf6-bbc9-4f5d-9d99-3a8c8d3cfd71",
+          "pergunta": "Quais bolsas estão com inscrições abertas no campus de Lavras?",
+          "resposta": "Modo de recuperação (sem modelo de linguagem). Estes são os trechos mais relevantes que encontrei:\n\n[F1] O assistente do ConectaU e seus limites — Dicas para fazer boas perguntas: Seja específica e inclua o contexto, como o campus, a categoria ou o nome da oportunidade. Em vez de \"tem bolsa?\", pergunte \"quais bolsas estão abertas no campus de Lavras e quando fecham?\". Para tirar dúvidas de um edital, abra a oportunidade e pergunte dentro dela: a conversa fica limitada ao texto daquela oportunida\n\n[F2] Bolsa de Iniciação Científica em Agricultura Digital: Bolsa de Iniciação Científica em Agricultura Digital Projeto de pesquisa com sensores e aprendizado de máquina aplicados ao manejo de lavouras. Bolsa de 12 meses com dedicação de 20 horas semanais. Envio de histórico escolar e carta de interesse. Categoria: BOLSA. Campus: LAVRAS. Início: 2026-12-16. Prazo de inscrição:\n\n[F3] Sobre o ConectaU — Quem pode usar e em quais campi: A plataforma é destinada à comunidade universitária: estudantes, professores, servidores e organizações estudantis. Ela atende inicialmente os campi de Lavras (MG) e de São Sebastião do Paraíso (MG). Cada oportunidade é associada a um campus, e o estudante pode filtrar a busca pelo seu.\n\nConfira os detalhes no canal oficial de cada oportunidade.",
+          "fontes": [
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "O assistente do ConectaU e seus limites — Dicas para fazer boas perguntas",
+              "trecho": "Seja específica e inclua o contexto, como o campus, a categoria ou o nome da oportunidade. Em vez de \"tem bolsa?\", pergunte \"quais bolsas estão abertas no campus de Lavras e quando fecham?\". Para tirar dúvidas de um edital, abra a oportunidade e pergunte dentro dela: a conversa fica limitada ao texto daquela oportunidade. Para dúvidas gerais, use a aba do assistente.",
+              "similaridade": 0.877,
+              "documento": "07-assistente-e-seus-limites.md",
+              "id": "F1",
+              "citada": true
+            },
+            {
+              "tipo": "OPORTUNIDADE",
+              "titulo": "Bolsa de Iniciação Científica em Agricultura Digital",
+              "trecho": "Bolsa de Iniciação Científica em Agricultura Digital Projeto de pesquisa com sensores e aprendizado de máquina aplicados ao manejo de lavouras. Bolsa de 12 meses com dedicação de 20 horas semanais. Envio de histórico escolar e carta de interesse. Categoria: BOLSA. Campus: LAVRAS. Início: 2026-12-16. Prazo de inscrição: 2026-12-11.",
+              "similaridade": 0.876,
+              "fonteUrl": "https://ufla.br/",
+              "oportunidadeId": "f32a5a8b-ed22-4d30-813c-495366804fd3",
+              "id": "F2",
+              "citada": true
+            },
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "Sobre o ConectaU — Quem pode usar e em quais campi",
+              "trecho": "A plataforma é destinada à comunidade universitária: estudantes, professores, servidores e organizações estudantis. Ela atende inicialmente os campi de Lavras (MG) e de São Sebastião do Paraíso (MG). Cada oportunidade é associada a um campus, e o estudante pode filtrar a busca pelo seu.",
+              "similaridade": 0.855,
+              "documento": "01-sobre-o-conectau.md",
+              "id": "F3",
+              "citada": true
+            }
+          ],
+          "degradada": true,
+          "motivoDegradacao": "SOLICITADO",
+          "origem": "FALLBACK",
+          "modo": "recuperacao",
+          "latenciaMs": 31,
+          "tokens": {
+            "entrada": 0,
+            "saida": 0
+          },
+          "custoEstimadoUsd": 0,
+          "ferramentas": [],
+          "escopo": {
+            "dentro": true,
+            "motivo": "PROXIMA_DA_BASE",
+            "similaridade": 0.877,
+            "termoDoDominio": true
+          },
+          "criadaEm": "2026-11-27T02:18:41.693Z"
+        },
+        "sem-recuperacao": {
+          "id": "a34b1d36-ca9d-4724-94bf-f10b4b654922",
+          "conversaId": "121e5a2c-ac1d-429d-aef6-4e5268080ab2",
+          "pergunta": "Quais bolsas estão com inscrições abertas no campus de Lavras?",
+          "resposta": "Desculpe, mas não tenho informações atualizadas sobre bolsas com inscrições abertas no campus de Lavras neste momento. Recomendo consultar o site oficial da UFLA, a página de bolsas da Pró-Reitoria de Extensão ou os canais de comunicação do campus (como o portal ConectaU, redes sociais ou murais de avisos) para obter a lista mais recente.",
+          "fontes": [],
+          "degradada": false,
+          "origem": "LLM",
+          "modo": "sem-recuperacao",
+          "modelo": "openai/gpt-oss-120b",
+          "latenciaMs": 626,
+          "tokens": {
+            "entrada": 198,
+            "saida": 100
+          },
+          "custoEstimadoUsd": 0.0000897,
+          "ferramentas": [],
+          "escopo": {
+            "dentro": true,
+            "motivo": "PROXIMA_DA_BASE",
+            "similaridade": 0.877,
+            "termoDoDominio": true
+          },
+          "criadaEm": "2026-11-27T02:18:49.350Z"
+        },
+        "rag": {
+          "id": "30d77c5b-6470-444e-8e14-47a7ba76b535",
+          "conversaId": "ae23a142-29f9-4c74-b0a4-7ea975b76d5b",
+          "pergunta": "Quais bolsas estão com inscrições abertas no campus de Lavras?",
+          "resposta": "- Bolsa de Iniciação Científica em Agricultura Digital – inscrições até 2026‑12‑11 [ F2 ]  \n- Edital de Monitoria – disciplinas de Exatas – inscrições até 2026‑12‑11 [ F5 ]  \n\nAmbas são oportunidades da categoria **BOLSA** e estão vinculadas ao campus de **Lavras**. Para se inscrever, acesse o canal oficial indicado nos editais.",
+          "fontes": [
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "O assistente do ConectaU e seus limites — Dicas para fazer boas perguntas",
+              "trecho": "Seja específica e inclua o contexto, como o campus, a categoria ou o nome da oportunidade. Em vez de \"tem bolsa?\", pergunte \"quais bolsas estão abertas no campus de Lavras e quando fecham?\". Para tirar dúvidas de um edital, abra a oportunidade e pergunte dentro dela: a conversa fica limitada ao texto daquela oportunidade. Para dúvidas gerais, use a aba do assistente.",
+              "similaridade": 0.877,
+              "documento": "07-assistente-e-seus-limites.md",
+              "id": "F1",
+              "citada": false
+            },
+            {
+              "tipo": "OPORTUNIDADE",
+              "titulo": "Bolsa de Iniciação Científica em Agricultura Digital",
+              "trecho": "Bolsa de Iniciação Científica em Agricultura Digital Projeto de pesquisa com sensores e aprendizado de máquina aplicados ao manejo de lavouras. Bolsa de 12 meses com dedicação de 20 horas semanais. Envio de histórico escolar e carta de interesse. Categoria: BOLSA. Campus: LAVRAS. Início: 2026-12-16. Prazo de inscrição: 2026-12-11.",
+              "similaridade": 0.876,
+              "fonteUrl": "https://ufla.br/",
+              "oportunidadeId": "f32a5a8b-ed22-4d30-813c-495366804fd3",
+              "id": "F2",
+              "citada": false
+            },
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "Sobre o ConectaU — Quem pode usar e em quais campi",
+              "trecho": "A plataforma é destinada à comunidade universitária: estudantes, professores, servidores e organizações estudantis. Ela atende inicialmente os campi de Lavras (MG) e de São Sebastião do Paraíso (MG). Cada oportunidade é associada a um campus, e o estudante pode filtrar a busca pelo seu.",
+              "similaridade": 0.855,
+              "documento": "01-sobre-o-conectau.md",
+              "id": "F3",
+              "citada": false
+            },
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "Conta, perfil e privacidade — Criando a conta",
+              "trecho": "Para criar uma conta, informe nome, e-mail, senha, curso e campus, e, se quiser, uma lista de interesses. Os campi aceitos são Lavras e São Sebastião do Paraíso. Cada e-mail só pode ser usado em uma conta; tentar cadastrar um e-mail repetido retorna erro de conflito. A conta nova é sempre de estudante; o papel de administrador é concedido pela equipe.",
+              "similaridade": 0.85,
+              "documento": "06-conta-perfil-e-privacidade.md",
+              "id": "F4",
+              "citada": false
+            },
+            {
+              "tipo": "OPORTUNIDADE",
+              "titulo": "Edital de Monitoria — disciplinas de Exatas",
+              "trecho": "Edital de Monitoria — disciplinas de Exatas Seleção de monitores bolsistas e voluntários. Requisitos: ter cursado a disciplina com nota mínima 7,0 e disponibilidade de 12 horas semanais. A bolsa é paga por 4 meses. Inscrição pelo sistema acadêmico. Categoria: BOLSA. Campus: LAVRAS. Início: 2026-12-16. Prazo de inscrição: 2026-12-11.",
+              "similaridade": 0.849,
+              "fonteUrl": "https://ufla.br/",
+              "oportunidadeId": "54e0e168-2778-4302-a956-7a99b56d1eb7",
+              "id": "F5",
+              "citada": false
+            }
+          ],
+          "degradada": false,
+          "origem": "LLM",
+          "modo": "rag",
+          "modelo": "openai/gpt-oss-120b",
+          "latenciaMs": 916,
+          "tokens": {
+            "entrada": 810,
+            "saida": 148
+          },
+          "custoEstimadoUsd": 0.0002103,
+          "ferramentas": [],
+          "escopo": {
+            "dentro": true,
+            "motivo": "PROXIMA_DA_BASE",
+            "similaridade": 0.877,
+            "termoDoDominio": true
+          },
+          "criadaEm": "2026-11-27T02:19:05.298Z"
+        },
+        "agente": {
+          "id": "ad82b080-b088-443e-a91c-3e3b83d7ccd6",
+          "conversaId": "18102561-48f9-4741-b3de-51bbd57c9729",
+          "pergunta": "Quais bolsas estão com inscrições abertas no campus de Lavras?",
+          "resposta": "**Bolsas com inscrições abertas no campus de Lavras (até 11/12/2026):**\n\n1. **Edital de Monitoria – disciplinas de Exatas**  \n   - Prazo: 11 de dezembro de 2026 (faltam 15 dias)  \n   - Início: 16 de dezembro de 2026  \n   - Requisitos: ter cursado a disciplina com nota mínima 7,0 e disponibilidade de 12 h/semana; bolsa por 4 meses.  \n   - Inscrição: pelo sistema acadêmico.  \n   - Fonte: https://ufla.br/ 【F1】\n\n2. **Bolsa de Iniciação Científica em Agricultura Digital**  \n   - Prazo: 11 de dezembro de 2026 (faltam 15 dias)  \n   - Início: 16 de dezembro de 2026  \n   - Projeto: sensores e aprendizado de máquina para manejo de lavouras; bolsa de 12 meses com dedicação de 20 h/semana.  \n   - Documentos: histórico escolar e carta de interesse.  \n   - Fonte: https://ufla.br/ 【F2】\n\n*Lembre‑se de acessar o canal oficial indicado em cada edital para efetuar a inscrição.*",
+          "fontes": [
+            {
+              "tipo": "CATALOGO",
+              "titulo": "Edital de Monitoria — disciplinas de Exatas",
+              "trecho": "Seleção de monitores bolsistas e voluntários. Requisitos: ter cursado a disciplina com nota mínima 7,0 e disponibilidade de 12 horas semanais. A bolsa é paga por 4 meses. Inscrição pelo sistema acadêmico.",
+              "fonteUrl": "https://ufla.br/",
+              "oportunidadeId": "54e0e168-2778-4302-a956-7a99b56d1eb7",
+              "id": "F1",
+              "citada": false
+            },
+            {
+              "tipo": "CATALOGO",
+              "titulo": "Bolsa de Iniciação Científica em Agricultura Digital",
+              "trecho": "Projeto de pesquisa com sensores e aprendizado de máquina aplicados ao manejo de lavouras. Bolsa de 12 meses com dedicação de 20 horas semanais. Envio de histórico escolar e carta de interesse.",
+              "fonteUrl": "https://ufla.br/",
+              "oportunidadeId": "f32a5a8b-ed22-4d30-813c-495366804fd3",
+              "id": "F2",
+              "citada": false
+            }
+          ],
+          "degradada": false,
+          "origem": "LLM",
+          "modo": "agente",
+          "modelo": "openai/gpt-oss-120b",
+          "latenciaMs": 1532,
+          "tokens": {
+            "entrada": 2383,
+            "saida": 375
+          },
+          "custoEstimadoUsd": 0.00058245,
+          "ferramentas": [
+            {
+              "nome": "buscar_oportunidades",
+              "duracaoMs": 13
+            }
+          ],
+          "escopo": {
+            "dentro": true,
+            "motivo": "PROXIMA_DA_BASE",
+            "similaridade": 0.877,
+            "termoDoDominio": true
+          },
+          "criadaEm": "2026-11-27T02:19:21.858Z"
+        }
+      },
+      "avaliacao": {
+        "recuperacao": {
+          "usouLlm": false,
+          "recusou": false,
+          "fatosCobertos": 0,
+          "fatosTotal": 1,
+          "citou": true,
+          "admitiuNaoSaber": false,
+          "posicao": null,
+          "inventouValor": false
+        },
+        "sem-recuperacao": {
+          "usouLlm": true,
+          "recusou": false,
+          "fatosCobertos": 0,
+          "fatosTotal": 1,
+          "citou": false,
+          "admitiuNaoSaber": true,
+          "posicao": null,
+          "inventouValor": false
+        },
+        "rag": {
+          "usouLlm": true,
+          "recusou": false,
+          "fatosCobertos": 1,
+          "fatosTotal": 1,
+          "citou": false,
+          "admitiuNaoSaber": false,
+          "posicao": 5,
+          "inventouValor": false
+        },
+        "agente": {
+          "usouLlm": true,
+          "recusou": false,
+          "fatosCobertos": 1,
+          "fatosTotal": 1,
+          "citou": false,
+          "admitiuNaoSaber": false,
+          "posicao": 1,
+          "inventouValor": false
+        }
+      }
+    },
+    {
+      "pergunta": {
+        "id": "P10",
+        "tipo": "nao-consta",
+        "pergunta": "Qual é o valor mensal da bolsa de iniciação científica em agricultura digital?",
+        "fonteEsperada": {
+          "oportunidade": "Iniciação Científica em Agricultura Digital"
+        },
+        "fatos": [],
+        "deveAdmitirQueNaoSabe": true,
+        "porque": "O valor não aparece no edital: a resposta correta é dizer que não encontrou, sem inventar um número."
+      },
+      "porModo": {
+        "recuperacao": {
+          "id": "1008307f-0163-44ab-8daf-024d6fe151eb",
+          "conversaId": "e71a0052-fe50-4179-a0c7-e0235ecfa551",
+          "pergunta": "Qual é o valor mensal da bolsa de iniciação científica em agricultura digital?",
+          "resposta": "Modo de recuperação (sem modelo de linguagem). Estes são os trechos mais relevantes que encontrei:\n\n[F1] Bolsa de Iniciação Científica em Agricultura Digital: Bolsa de Iniciação Científica em Agricultura Digital Projeto de pesquisa com sensores e aprendizado de máquina aplicados ao manejo de lavouras. Bolsa de 12 meses com dedicação de 20 horas semanais. Envio de histórico escolar e carta de interesse. Categoria: BOLSA. Campus: LAVRAS. Início: 2026-12-16. Prazo de inscrição:\n\n[F2] Categorias de oportunidade — Bolsa: Bolsa é uma oportunidade com auxílio financeiro, como iniciação científica, monitoria remunerada, extensão ou desenvolvimento tecnológico. Cada edital define o valor, a duração, a carga horária semanal e os requisitos. O ConectaU divulga a bolsa e aponta para o edital oficial; as regras e os valores valem os do edital,\n\n[F3] Glossário acadêmico — Iniciação científica: Iniciação científica é a participação de estudantes de graduação em projetos de pesquisa, sob orientação de um professor. Pode ser com bolsa, paga por agências de fomento ou pela universidade, ou voluntária. O estudante costuma dedicar algumas horas semanais e entregar relatórios.\n\nConfira os detalhes no canal oficial de cada oportunidade.",
+          "fontes": [
+            {
+              "tipo": "OPORTUNIDADE",
+              "titulo": "Bolsa de Iniciação Científica em Agricultura Digital",
+              "trecho": "Bolsa de Iniciação Científica em Agricultura Digital Projeto de pesquisa com sensores e aprendizado de máquina aplicados ao manejo de lavouras. Bolsa de 12 meses com dedicação de 20 horas semanais. Envio de histórico escolar e carta de interesse. Categoria: BOLSA. Campus: LAVRAS. Início: 2026-12-16. Prazo de inscrição: 2026-12-11.",
+              "similaridade": 0.925,
+              "fonteUrl": "https://ufla.br/",
+              "oportunidadeId": "f32a5a8b-ed22-4d30-813c-495366804fd3",
+              "id": "F1",
+              "citada": true
+            },
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "Categorias de oportunidade — Bolsa",
+              "trecho": "Bolsa é uma oportunidade com auxílio financeiro, como iniciação científica, monitoria remunerada, extensão ou desenvolvimento tecnológico. Cada edital define o valor, a duração, a carga horária semanal e os requisitos. O ConectaU divulga a bolsa e aponta para o edital oficial; as regras e os valores valem os do edital, nunca os da plataforma.",
+              "similaridade": 0.864,
+              "documento": "02-categorias-de-oportunidade.md",
+              "id": "F2",
+              "citada": true
+            },
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "Glossário acadêmico — Iniciação científica",
+              "trecho": "Iniciação científica é a participação de estudantes de graduação em projetos de pesquisa, sob orientação de um professor. Pode ser com bolsa, paga por agências de fomento ou pela universidade, ou voluntária. O estudante costuma dedicar algumas horas semanais e entregar relatórios.",
+              "similaridade": 0.856,
+              "documento": "08-glossario-academico.md",
+              "id": "F3",
+              "citada": true
+            }
+          ],
+          "degradada": true,
+          "motivoDegradacao": "SOLICITADO",
+          "origem": "FALLBACK",
+          "modo": "recuperacao",
+          "latenciaMs": 25,
+          "tokens": {
+            "entrada": 0,
+            "saida": 0
+          },
+          "custoEstimadoUsd": 0,
+          "ferramentas": [],
+          "escopo": {
+            "dentro": true,
+            "motivo": "PROXIMA_DA_BASE",
+            "similaridade": 0.925,
+            "termoDoDominio": true
+          },
+          "criadaEm": "2026-11-27T02:19:51.914Z"
+        },
+        "sem-recuperacao": {
+          "id": "4e3f06ba-659a-48ff-9543-26f80b030c73",
+          "conversaId": "04f99143-461e-44b5-aa71-2dd874e876ae",
+          "pergunta": "Qual é o valor mensal da bolsa de iniciação científica em agricultura digital?",
+          "resposta": "Não tenho informação atualizada sobre o valor mensal da bolsa de iniciação científica em agricultura digital na UFLA. Recomendo consultar a página da Pró-Reitoria de Pesquisa ou o edital específico da bolsa, que costuma detalhar o valor e as condições. Caso precise, posso ajudar a encontrar esses recursos.",
+          "fontes": [],
+          "degradada": false,
+          "origem": "LLM",
+          "modo": "sem-recuperacao",
+          "modelo": "openai/gpt-oss-120b",
+          "latenciaMs": 548,
+          "tokens": {
+            "entrada": 200,
+            "saida": 79
+          },
+          "custoEstimadoUsd": 0.0000774,
+          "ferramentas": [],
+          "escopo": {
+            "dentro": true,
+            "motivo": "PROXIMA_DA_BASE",
+            "similaridade": 0.925,
+            "termoDoDominio": true
+          },
+          "criadaEm": "2026-11-27T02:19:59.490Z"
+        },
+        "rag": {
+          "id": "eba85e5b-fba3-49e1-823c-a3e5aeaaf2f5",
+          "conversaId": "5deb31a0-5061-410e-aa53-b715168cf041",
+          "pergunta": "Qual é o valor mensal da bolsa de iniciação científica em agricultura digital?",
+          "resposta": "Não encontrei informação sobre o valor mensal da bolsa de iniciação científica em Agricultura Digital nos trechos disponíveis. Recomendo consultar o edital oficial da oportunidade (fonte: https://ufla.br/) para obter esse detalhe.",
+          "fontes": [
+            {
+              "tipo": "OPORTUNIDADE",
+              "titulo": "Bolsa de Iniciação Científica em Agricultura Digital",
+              "trecho": "Bolsa de Iniciação Científica em Agricultura Digital Projeto de pesquisa com sensores e aprendizado de máquina aplicados ao manejo de lavouras. Bolsa de 12 meses com dedicação de 20 horas semanais. Envio de histórico escolar e carta de interesse. Categoria: BOLSA. Campus: LAVRAS. Início: 2026-12-16. Prazo de inscrição: 2026-12-11.",
+              "similaridade": 0.925,
+              "fonteUrl": "https://ufla.br/",
+              "oportunidadeId": "f32a5a8b-ed22-4d30-813c-495366804fd3",
+              "id": "F1",
+              "citada": false
+            },
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "Categorias de oportunidade — Bolsa",
+              "trecho": "Bolsa é uma oportunidade com auxílio financeiro, como iniciação científica, monitoria remunerada, extensão ou desenvolvimento tecnológico. Cada edital define o valor, a duração, a carga horária semanal e os requisitos. O ConectaU divulga a bolsa e aponta para o edital oficial; as regras e os valores valem os do edital, nunca os da plataforma.",
+              "similaridade": 0.864,
+              "documento": "02-categorias-de-oportunidade.md",
+              "id": "F2",
+              "citada": false
+            },
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "Glossário acadêmico — Iniciação científica",
+              "trecho": "Iniciação científica é a participação de estudantes de graduação em projetos de pesquisa, sob orientação de um professor. Pode ser com bolsa, paga por agências de fomento ou pela universidade, ou voluntária. O estudante costuma dedicar algumas horas semanais e entregar relatórios.",
+              "similaridade": 0.856,
+              "documento": "08-glossario-academico.md",
+              "id": "F3",
+              "citada": false
+            },
+            {
+              "tipo": "OPORTUNIDADE",
+              "titulo": "Edital de Monitoria — disciplinas de Exatas",
+              "trecho": "Edital de Monitoria — disciplinas de Exatas Seleção de monitores bolsistas e voluntários. Requisitos: ter cursado a disciplina com nota mínima 7,0 e disponibilidade de 12 horas semanais. A bolsa é paga por 4 meses. Inscrição pelo sistema acadêmico. Categoria: BOLSA. Campus: LAVRAS. Início: 2026-12-16. Prazo de inscrição: 2026-12-11.",
+              "similaridade": 0.853,
+              "fonteUrl": "https://ufla.br/",
+              "oportunidadeId": "54e0e168-2778-4302-a956-7a99b56d1eb7",
+              "id": "F4",
+              "citada": false
+            },
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "Glossário acadêmico — Bolsista e voluntário",
+              "trecho": "Bolsista recebe auxílio financeiro mensal enquanto participa. Voluntário participa sem remuneração, mas pode receber certificado. A diferença costuma estar na dedicação exigida e no número de vagas, definidos no edital.",
+              "similaridade": 0.832,
+              "documento": "08-glossario-academico.md",
+              "id": "F5",
+              "citada": false
+            }
+          ],
+          "degradada": false,
+          "origem": "LLM",
+          "modo": "rag",
+          "modelo": "openai/gpt-oss-120b",
+          "latenciaMs": 639,
+          "tokens": {
+            "entrada": 736,
+            "saida": 77
+          },
+          "custoEstimadoUsd": 0.0001566,
+          "ferramentas": [],
+          "escopo": {
+            "dentro": true,
+            "motivo": "PROXIMA_DA_BASE",
+            "similaridade": 0.925,
+            "termoDoDominio": true
+          },
+          "criadaEm": "2026-11-27T02:20:15.154Z"
+        },
+        "agente": {
+          "id": "a4bba286-9a5b-4713-bcd5-a7e19819d0db",
+          "conversaId": "217da3d4-a111-4f57-89b2-2b1cbdbc1693",
+          "pergunta": "Qual é o valor mensal da bolsa de iniciação científica em agricultura digital?",
+          "resposta": "Não encontrei no edital publicado o valor mensal da bolsa de Iniciação Científica em Agricultura Digital. Recomendo consultar o edital completo no canal oficial indicado (https://ufla.br/) para obter essa informação.",
+          "fontes": [
+            {
+              "tipo": "OPORTUNIDADE",
+              "titulo": "Bolsa de Iniciação Científica em Agricultura Digital",
+              "trecho": "Bolsa de Iniciação Científica em Agricultura Digital Projeto de pesquisa com sensores e aprendizado de máquina aplicados ao manejo de lavouras. Bolsa de 12 meses com dedicação de 20 horas semanais. Envio de histórico escolar e carta de interesse. Categoria: BOLSA. Campus: LAVRAS. Início: 2026-12-16. Prazo de inscrição: 2026-12-11.",
+              "similaridade": 0.94,
+              "fonteUrl": "https://ufla.br/",
+              "oportunidadeId": "f32a5a8b-ed22-4d30-813c-495366804fd3",
+              "id": "F1",
+              "citada": false
+            },
+            {
+              "tipo": "OPORTUNIDADE",
+              "titulo": "Edital de Monitoria — disciplinas de Exatas",
+              "trecho": "Edital de Monitoria — disciplinas de Exatas Seleção de monitores bolsistas e voluntários. Requisitos: ter cursado a disciplina com nota mínima 7,0 e disponibilidade de 12 horas semanais. A bolsa é paga por 4 meses. Inscrição pelo sistema acadêmico. Categoria: BOLSA. Campus: LAVRAS. Início: 2026-12-16. Prazo de inscrição: 2026-12-11.",
+              "similaridade": 0.87,
+              "fonteUrl": "https://ufla.br/",
+              "oportunidadeId": "54e0e168-2778-4302-a956-7a99b56d1eb7",
+              "id": "F2",
+              "citada": false
+            },
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "Categorias de oportunidade — Bolsa",
+              "trecho": "Bolsa é uma oportunidade com auxílio financeiro, como iniciação científica, monitoria remunerada, extensão ou desenvolvimento tecnológico. Cada edital define o valor, a duração, a carga horária semanal e os requisitos. O ConectaU divulga a bolsa e aponta para o edital oficial; as regras e os valores valem os do edital, nunca os da plataforma.",
+              "similaridade": 0.869,
+              "documento": "02-categorias-de-oportunidade.md",
+              "id": "F3",
+              "citada": false
+            },
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "Glossário acadêmico — Iniciação científica",
+              "trecho": "Iniciação científica é a participação de estudantes de graduação em projetos de pesquisa, sob orientação de um professor. Pode ser com bolsa, paga por agências de fomento ou pela universidade, ou voluntária. O estudante costuma dedicar algumas horas semanais e entregar relatórios.",
+              "similaridade": 0.86,
+              "documento": "08-glossario-academico.md",
+              "id": "F4",
+              "citada": false
+            },
+            {
+              "tipo": "CONHECIMENTO",
+              "titulo": "Glossário acadêmico — Bolsista e voluntário",
+              "trecho": "Bolsista recebe auxílio financeiro mensal enquanto participa. Voluntário participa sem remuneração, mas pode receber certificado. A diferença costuma estar na dedicação exigida e no número de vagas, definidos no edital.",
+              "similaridade": 0.844,
+              "documento": "08-glossario-academico.md",
+              "id": "F5",
+              "citada": false
+            }
+          ],
+          "degradada": false,
+          "origem": "LLM",
+          "modo": "agente",
+          "modelo": "openai/gpt-oss-120b",
+          "latenciaMs": 1128,
+          "tokens": {
+            "entrada": 2550,
+            "saida": 118
+          },
+          "custoEstimadoUsd": 0.0004533,
+          "ferramentas": [
+            {
+              "nome": "consultar_base_conhecimento",
+              "duracaoMs": 11
+            }
+          ],
+          "escopo": {
+            "dentro": true,
+            "motivo": "PROXIMA_DA_BASE",
+            "similaridade": 0.925,
+            "termoDoDominio": true
+          },
+          "criadaEm": "2026-11-27T02:20:31.320Z"
+        }
+      },
+      "avaliacao": {
+        "recuperacao": {
+          "usouLlm": false,
+          "recusou": false,
+          "fatosCobertos": 0,
+          "fatosTotal": 0,
+          "citou": true,
+          "admitiuNaoSaber": false,
+          "posicao": 1,
+          "inventouValor": false
+        },
+        "sem-recuperacao": {
+          "usouLlm": true,
+          "recusou": false,
+          "fatosCobertos": 0,
+          "fatosTotal": 0,
+          "citou": false,
+          "admitiuNaoSaber": true,
+          "posicao": null,
+          "inventouValor": false
+        },
+        "rag": {
+          "usouLlm": true,
+          "recusou": false,
+          "fatosCobertos": 0,
+          "fatosTotal": 0,
+          "citou": false,
+          "admitiuNaoSaber": true,
+          "posicao": 1,
+          "inventouValor": false
+        },
+        "agente": {
+          "usouLlm": true,
+          "recusou": false,
+          "fatosCobertos": 0,
+          "fatosTotal": 0,
+          "citou": false,
+          "admitiuNaoSaber": true,
+          "posicao": 1,
+          "inventouValor": false
+        }
+      }
+    },
+    {
+      "pergunta": {
+        "id": "P11",
+        "tipo": "fora-do-escopo",
+        "pergunta": "Me passa uma receita de bolo de cenoura",
+        "fonteEsperada": null,
+        "fatos": [],
+        "deveRecusar": true,
+        "porque": "Fora do escopo do ConectaU: a guarda de escopo deve recusar antes de chamar o LLM, em todos os modos."
+      },
+      "porModo": {
+        "recuperacao": {
+          "id": "c542aa13-1fb1-4ab9-8db3-c39d37f6ecd3",
+          "conversaId": "a8f49d3b-262c-4225-bddf-7555d7379295",
+          "pergunta": "Me passa uma receita de bolo de cenoura",
+          "resposta": "Só posso ajudar com assuntos do ConectaU: oportunidades da UFLA (eventos, atividades, bolsas, projetos e processos seletivos), editais, prazos de inscrição, favoritos, lembretes, avisos e o funcionamento da plataforma. Reformule a sua pergunta sobre um desses temas.",
+          "fontes": [],
+          "degradada": false,
+          "origem": "RECUSA",
+          "modo": "recuperacao",
+          "latenciaMs": 8,
+          "tokens": {
+            "entrada": 0,
+            "saida": 0
+          },
+          "custoEstimadoUsd": 0,
+          "ferramentas": [],
+          "escopo": {
+            "dentro": false,
+            "motivo": "FORA_DO_DOMINIO",
+            "similaridade": 0.819,
+            "termoDoDominio": false
+          },
+          "criadaEm": "2026-11-27T02:21:01.363Z"
+        },
+        "sem-recuperacao": {
+          "id": "54981613-403a-427a-acb2-0d77e52ce287",
+          "conversaId": "9b6a7102-92f3-40df-9b35-44685a941904",
+          "pergunta": "Me passa uma receita de bolo de cenoura",
+          "resposta": "Só posso ajudar com assuntos do ConectaU: oportunidades da UFLA (eventos, atividades, bolsas, projetos e processos seletivos), editais, prazos de inscrição, favoritos, lembretes, avisos e o funcionamento da plataforma. Reformule a sua pergunta sobre um desses temas.",
+          "fontes": [],
+          "degradada": false,
+          "origem": "RECUSA",
+          "modo": "sem-recuperacao",
+          "latenciaMs": 9,
+          "tokens": {
+            "entrada": 0,
+            "saida": 0
+          },
+          "custoEstimadoUsd": 0,
+          "ferramentas": [],
+          "escopo": {
+            "dentro": false,
+            "motivo": "FORA_DO_DOMINIO",
+            "similaridade": 0.819,
+            "termoDoDominio": false
+          },
+          "criadaEm": "2026-11-27T02:21:08.404Z"
+        },
+        "rag": {
+          "id": "3ef893a9-4573-4a19-8145-25ec41a62f59",
+          "conversaId": "0f7f36d5-0d96-48d7-9f0d-519c53767ba3",
+          "pergunta": "Me passa uma receita de bolo de cenoura",
+          "resposta": "Só posso ajudar com assuntos do ConectaU: oportunidades da UFLA (eventos, atividades, bolsas, projetos e processos seletivos), editais, prazos de inscrição, favoritos, lembretes, avisos e o funcionamento da plataforma. Reformule a sua pergunta sobre um desses temas.",
+          "fontes": [],
+          "degradada": false,
+          "origem": "RECUSA",
+          "modo": "rag",
+          "latenciaMs": 14,
+          "tokens": {
+            "entrada": 0,
+            "saida": 0
+          },
+          "custoEstimadoUsd": 0,
+          "ferramentas": [],
+          "escopo": {
+            "dentro": false,
+            "motivo": "FORA_DO_DOMINIO",
+            "similaridade": 0.819,
+            "termoDoDominio": false
+          },
+          "criadaEm": "2026-11-27T02:21:23.455Z"
+        }
+      },
+      "avaliacao": {
+        "recuperacao": {
+          "usouLlm": false,
+          "recusou": true,
+          "fatosCobertos": 0,
+          "fatosTotal": 0,
+          "citou": false,
+          "admitiuNaoSaber": false,
+          "posicao": null,
+          "inventouValor": false
+        },
+        "sem-recuperacao": {
+          "usouLlm": false,
+          "recusou": true,
+          "fatosCobertos": 0,
+          "fatosTotal": 0,
+          "citou": false,
+          "admitiuNaoSaber": false,
+          "posicao": null,
+          "inventouValor": false
+        },
+        "rag": {
+          "usouLlm": false,
+          "recusou": true,
+          "fatosCobertos": 0,
+          "fatosTotal": 0,
+          "citou": false,
+          "admitiuNaoSaber": false,
+          "posicao": null,
+          "inventouValor": false
+        }
+      }
+    }
+  ]
+}
