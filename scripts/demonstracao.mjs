@@ -7,6 +7,7 @@
 // a compensação da SAGA e depois o religa.
 import { execSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
+import { estadoDoLlm, simularFalhaDoLlm } from "./falha-llm.mjs";
 
 const argumentos = Object.fromEntries(
   process.argv.slice(2).map((a) => a.replace(/^--/, "").split("=")).map(([k, v]) => [k, v ?? "true"])
@@ -67,6 +68,21 @@ async function acompanharSaga(token, sagaId) {
     await esperar(500);
   }
   throw new Error("A SAGA não terminou em 30 s");
+}
+
+/** Pergunta ao assistente pelo gateway; se o limite de requisições (10/min) for atingido, espera e tenta de novo. */
+async function perguntar(token, conversaId, pergunta, extra = {}) {
+  for (let tentativa = 0; tentativa < 4; tentativa++) {
+    const r = await api("POST", `/web/conversas/${conversaId}/mensagens`, { token, corpo: { pergunta, ...extra } });
+    if (r.status !== 429) return r;
+    console.log("     (limite de requisições do gateway para o assistente; aguardando 7 s)");
+    await esperar(7000);
+  }
+  throw new Error("O limite de requisições do gateway persistiu");
+}
+
+function descreverModo(d) {
+  return d.origem === "LLM" ? `LLM ${d.modelo}` : d.origem === "CACHE" ? `cache ${d.cache?.tipo}` : `modo degradado (${d.motivoDegradacao})`;
 }
 
 function derrubarAssistente(ligar) {
@@ -160,14 +176,32 @@ async function principal() {
   const lembrete = await api("POST", "/web/lembretes", { token: estudante, corpo: { oportunidadeId: oportunidadeA, antecedenciaHoras: 48 } });
   confere(lembrete.status === 201, `POST /web/lembretes → ${lembrete.status}, dispara em ${lembrete.dados?.dispararEm}`);
 
-  titulo("Assistente: busca vetorial no pgvector sobre o texto indexado pela SAGA");
-  const conversa = await api("POST", "/web/conversas", { token: estudante, corpo: { oportunidadeId: oportunidadeA } });
-  const resposta = await api("POST", `/web/conversas/${conversa.dados.id}/mensagens`, {
-    token: estudante,
-    corpo: { pergunta: "Quantas vagas e o que preciso levar?" }
-  });
-  confere(resposta.status === 201 && resposta.dados.citacoes.length > 0, `${resposta.dados.citacoes?.length} trecho(s) citado(s), degradada=${resposta.dados.degradada}`);
-  if (resposta.dados.citacoes?.[0]) console.log(`     trecho: "${resposta.dados.citacoes[0].trecho.slice(0, 110)}..."`);
+  titulo("Assistente: RAG com agente LangChain (base de conhecimento, edital indexado pela SAGA e catálogo)");
+  const geral = (await api("POST", "/web/conversas", { token: estudante, corpo: {} })).dados.id;
+
+  const funcionamento = await perguntar(estudante, geral, "Como funcionam os lembretes de prazo?");
+  const trechosDoc = funcionamento.dados.fontes?.filter((f) => f.tipo === "CONHECIMENTO") ?? [];
+  confere(
+    funcionamento.status === 201 && trechosDoc.length > 0,
+    `base de conhecimento: ${trechosDoc.length} trecho(s) recuperado(s) · ${descreverModo(funcionamento.dados)} · ${funcionamento.dados.latenciaMs} ms`
+  );
+  console.log(`     resposta: "${funcionamento.dados.resposta.replace(/\s+/g, " ").slice(0, 170)}..."`);
+
+  const conversaEdital = await api("POST", "/web/conversas", { token: estudante, corpo: { oportunidadeId: oportunidadeA } });
+  const edital = await perguntar(estudante, conversaEdital.dados.id, "Quantas vagas e o que preciso levar?");
+  const trechosEdital = edital.dados.fontes?.filter((f) => f.tipo === "OPORTUNIDADE") ?? [];
+  confere(
+    edital.status === 201 && trechosEdital.length > 0 && trechosEdital.every((f) => f.oportunidadeId === oportunidadeA),
+    `edital indexado pela SAGA: ${trechosEdital.length} trecho(s), todos da oportunidade da conversa · ${descreverModo(edital.dados)}`
+  );
+
+  const catalogo = await perguntar(estudante, geral, "Quais eventos estão abertos no campus de Lavras e quando fecham as inscrições?");
+  const usouCatalogo = catalogo.dados.ferramentas?.some((f) => f.nome === "buscar_oportunidades");
+  if (catalogo.dados.origem === "LLM") confere(usouCatalogo, `o agente consultou o catálogo real (ferramenta buscar_oportunidades) · ${catalogo.dados.latenciaMs} ms`);
+  else ok(`${descreverModo(catalogo.dados)}: o agente só consulta o catálogo com o LLM ativo (defina GROQ_API_KEY)`);
+
+  const soBusca = await perguntar(estudante, geral, "Como funcionam os lembretes de prazo?", { modo: "recuperacao" });
+  confere(soBusca.status === 201 && soBusca.dados.origem === "FALLBACK" && soBusca.dados.fontes.length > 0, `modo recuperação (só a busca vetorial no pgvector, sem LLM): ${soBusca.dados.fontes?.length} trecho(s) em ${soBusca.dados.latenciaMs} ms`);
 
   titulo("Segurança no gateway");
   confere((await api("GET", "/admin/candidatos")).status === 401, "/admin sem token → 401");
@@ -193,6 +227,36 @@ async function principal() {
     confere(oportunidadeDepois.dados.status === "RASCUNHO", `oportunidade de volta a ${oportunidadeDepois.dados.status}`);
     const naBusca = await api("GET", `/web/oportunidades/${oportunidadeB}`);
     confere(naBusca.status === 404, `não aparece no modelo de leitura (GET público → ${naBusca.status})`);
+  }
+
+  if (MODO_FALHA !== "nenhuma") {
+    titulo(`LLM como dependência falível: fallback e disjuntor (falha injetada no provedor, via ${MODO_FALHA})`);
+    const antes = estadoDoLlm(MODO_FALHA);
+    console.log(`     LLM: ${antes.configurado ? `configurado (${antes.modelo})` : "sem GROQ_API_KEY (modo de recuperação)"} · disjuntor: ${antes.disjuntor.estado}`);
+    simularFalhaDoLlm(MODO_FALHA, { falha: true });
+    const conversaFalha = (await api("POST", "/web/conversas", { token: estudante, corpo: {} })).dados.id;
+    const motivos = [];
+    let ultima;
+    for (let i = 1; i <= 4; i++) {
+      ultima = (await perguntar(estudante, conversaFalha, "Como funcionam os lembretes de prazo?", { semCache: true })).dados;
+      motivos.push(ultima.motivoDegradacao);
+      console.log(`     pergunta ${i}: degradada=${ultima.degradada} · motivo=${ultima.motivoDegradacao} · ${ultima.latenciaMs} ms · ${ultima.fontes.length} trecho(s) devolvido(s)`);
+    }
+    confere(motivos.every((m) => m === "PROVEDOR_INDISPONIVEL" || m === "CIRCUITO_ABERTO"), "com o provedor fora do ar, o usuário continua recebendo os trechos recuperados (fallback)");
+    confere(motivos.at(-1) === "CIRCUITO_ABERTO" && ultima.latenciaMs < 1500, `o disjuntor abriu: a última pergunta foi respondida em ${ultima.latenciaMs} ms, sem tocar no provedor`);
+    simularFalhaDoLlm(MODO_FALHA, { falha: false });
+    const depois = estadoDoLlm(MODO_FALHA);
+    console.log(`     disjuntor: ${depois.disjuntor.estado} · aberturas: ${depois.disjuntor.aberturas} · chamadas rejeitadas: ${depois.disjuntor.rejeitadas}`);
+    if (depois.configurado) {
+      console.log("     provedor restabelecido; aguardando o disjuntor testar de novo (até 45 s)...");
+      for (let i = 0; i < 23 && estadoDoLlm(MODO_FALHA).disjuntor.estado === "ABERTO"; i++) await esperar(2000);
+      const retomada = (await perguntar(estudante, conversaFalha, "Como funcionam os lembretes de prazo?", { semCache: true })).dados;
+      confere(retomada.origem === "LLM", `a chamada de teste deu certo e o circuito fechou: ${descreverModo(retomada)} · disjuntor ${estadoDoLlm(MODO_FALHA).disjuntor.estado}`);
+    } else {
+      ok("sem GROQ_API_KEY a recuperação do circuito não se aplica (não há chamadas reais); preencha a chave para ver o circuito fechar");
+    }
+    const metricas = estadoDoLlm(MODO_FALHA).metricas;
+    console.log(`     métricas: ${metricas.respostas} respostas (LLM ${metricas.porOrigem.llm} · cache ${metricas.porOrigem.cache} · fallback ${metricas.porOrigem.fallback}) · custo estimado US$ ${metricas.custoEstimadoTotalUsd.toFixed(6)}`);
   }
 
   titulo("Encerramento: evento remove do modelo de leitura e avisa quem salvou");
