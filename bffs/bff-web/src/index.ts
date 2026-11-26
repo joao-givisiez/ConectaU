@@ -233,7 +233,7 @@ app.patch("/notificacoes/:id", (req, res) =>
 // Assistente de editais (limite de requisições mais restrito no gateway).
 app.post("/conversas", (req, res) => repassar(req, res, URL.assistente, "/api/v1/conversas"));
 app.post("/conversas/:id/mensagens", (req, res) =>
-  repassar(req, res, URL.assistente, `/api/v1/conversas/${idDoCaminho(req.params.id, "Conversa")}/mensagens`, 15000)
+  repassar(req, res, URL.assistente, `/api/v1/conversas/${idDoCaminho(req.params.id, "Conversa")}/mensagens`, 50000)
 );
 
 finalizarApp(app, SERVICO);
