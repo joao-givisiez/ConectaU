@@ -11,7 +11,7 @@
   <a href="SISTEMA.md"><b>📘 Como funciona</b></a> ·
   <a href="docs/arquitetura/openapi.yaml"><b>📄 OpenAPI</b></a> ·
   <a href="infrastructure/kubernetes/"><b>☸️ Kubernetes</b></a> ·
-  <a href="#-roteiro-da-demonstração"><b>▶️ Demonstração</b></a>
+  <a href="#-roteiro-da-demonstração"><b>🎬 Demonstração</b></a>
 </p>
 
 ---
@@ -152,7 +152,7 @@ Instruções completas (Kubernetes, atualização a partir da Parte 3, desenvolv
 
 ---
 
-## ▶️ Roteiro da demonstração
+## 🎬 Roteiro da demonstração
 
 Comandos na ordem da apresentação (requer Node.js 22 no computador).
 
