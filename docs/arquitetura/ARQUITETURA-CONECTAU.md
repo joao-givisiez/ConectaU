@@ -2,7 +2,7 @@
 
 > **Documento de entrada da arquitetura.** O detalhe de cada item está nos documentos 4.1 a 4.7; este arquivo resume e aponta para eles, sem repetir o conteúdo, para que os documentos não voltem a divergir.
 >
-> **Status:** arquitetura revisada após a Parte 2 ([o que mudou e por quê](4.1-microsservicos.md#revisão-em-relação-à-parte-2)). Os 5 serviços estão implementados e containerizados desde a Parte 3 ([como subir](../../README.md#-execução-e-infraestrutura)); a geração de respostas por LLM no Assistente é escopo da Parte 4.
+> **Status:** arquitetura revisada após a Parte 2 ([o que mudou e por quê](4.1-microsservicos.md#revisão-em-relação-à-parte-2)). Os 5 serviços estão implementados e containerizados desde a Parte 3 ([como subir](../../README.md#-execução-e-infraestrutura)). Na Parte 4, o Assistente passou a gerar respostas com LLM ([RAG e agente](../parte-4/rag-e-agente.md)). Explicação de ponta a ponta: [`SISTEMA.md`](../../SISTEMA.md).
 
 ## Em números
 
@@ -61,6 +61,7 @@ flowchart TB
   OP -->|"outbox → relay"| MQ
   MQ --> PJ
   MQ --> EN
+  MQ -->|"editada / encerrada: atualiza o índice"| AS
 
   DBID[("PostgreSQL<br/>identidade")]
   DBCO[("MongoDB<br/>coleta")]

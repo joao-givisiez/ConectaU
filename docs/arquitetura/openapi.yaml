@@ -633,6 +633,13 @@ paths:
     post:
       tags: [Assistente]
       summary: Enviar pergunta e obter resposta com citações
+      description: |
+        Por padrão (modo `agente`), um agente LangChain decide se consulta a base de conhecimento, o
+        catálogo de oportunidades ou nenhum dos dois, e o LLM (Groq) redige a resposta citando as
+        fontes ([F1], [F2]...). Antes do LLM, uma guarda de escopo recusa perguntas fora do tema do
+        ConectaU (`origem: RECUSA`, sem custo). Se o LLM estiver indisponível, a resposta sai em modo
+        degradado (`degradada: true`) com os trechos recuperados. Os modos `rag`, `sem-recuperacao` e
+        `recuperacao` existem para a avaliação do RAG.
       requestBody:
         required: true
         content:
@@ -1209,14 +1216,32 @@ components:
       type: object
       properties:
         pergunta: { type: string, maxLength: 2000 }
+        modo:
+          type: string
+          enum: [agente, rag, sem-recuperacao, recuperacao]
+          default: agente
+          description: |
+            agente (padrão): o LLM escolhe as ferramentas. rag: recupera sempre e depois gera.
+            sem-recuperacao: linha de base, o LLM sem dados do ConectaU. recuperacao: só a busca
+            vetorial, sem LLM.
+        semCache: { type: boolean, default: false, description: Ignora o cache de respostas (medições). }
       required: [pergunta]
-    Citacao:
+    Fonte:
       type: object
       properties:
-        oportunidadeId: { type: string, format: uuid }
+        id: { type: string, example: F1, description: Rótulo citado na resposta. }
+        tipo:
+          type: string
+          enum: [CONHECIMENTO, OPORTUNIDADE, CATALOGO]
+          description: Base de conhecimento, edital indexado ou catálogo consultado pela ferramenta.
+        titulo: { type: string }
         trecho: { type: string }
         fonteUrl: { type: string, format: uri }
-      required: [trecho]
+        oportunidadeId: { type: string, format: uuid }
+        documento: { type: string }
+        similaridade: { type: number }
+        citada: { type: boolean, description: O rótulo aparece no texto da resposta. }
+      required: [id, tipo, titulo, trecho, citada]
     Mensagem:
       type: object
       properties:
@@ -1224,14 +1249,51 @@ components:
         conversaId: { type: string, format: uuid }
         pergunta: { type: string }
         resposta: { type: string }
-        citacoes:
+        fontes:
           type: array
-          items: { $ref: '#/components/schemas/Citacao' }
+          items: { $ref: '#/components/schemas/Fonte' }
+        origem:
+          type: string
+          enum: [LLM, CACHE, FALLBACK, RECUSA]
+          description: Quem produziu a resposta.
         degradada:
           type: boolean
-          description: true quando o LLM falhou e só os trechos recuperados foram devolvidos.
+          description: true quando o LLM não respondeu e só os trechos recuperados foram devolvidos.
+        motivoDegradacao:
+          type: string
+          enum: [SEM_CHAVE, CIRCUITO_ABERTO, PROVEDOR_INDISPONIVEL, TEMPO_ESGOTADO, LIMITE_DO_PROVEDOR, CHAVE_INVALIDA, SOLICITADO, ERRO_INESPERADO]
+        modo: { type: string, enum: [agente, rag, sem-recuperacao, recuperacao] }
+        modelo: { type: string, example: openai/gpt-oss-120b }
+        latenciaMs: { type: integer }
+        tokens:
+          type: object
+          properties:
+            entrada: { type: integer }
+            saida: { type: integer }
+        custoEstimadoUsd: { type: number }
+        ferramentas:
+          type: array
+          description: Ferramentas que o agente usou, com a duração de cada uma.
+          items:
+            type: object
+            properties:
+              nome: { type: string }
+              duracaoMs: { type: integer }
+        cache:
+          type: object
+          description: Presente quando a resposta veio do cache.
+          properties:
+            tipo: { type: string, enum: [exato, semantico] }
+            similaridade: { type: number }
+        escopo:
+          type: object
+          description: Decisão da guarda de escopo, tomada antes de qualquer chamada ao LLM.
+          properties:
+            dentro: { type: boolean }
+            motivo: { type: string, enum: [PROXIMA_DA_BASE, CUMPRIMENTO, FORA_DO_DOMINIO, MANIPULACAO] }
+            similaridade: { type: number }
         criadaEm: { type: string, format: date-time }
-      required: [id, conversaId, pergunta, resposta, citacoes, criadaEm]
+      required: [id, conversaId, pergunta, resposta, fontes, origem, degradada, modo, latenciaMs, criadaEm]
 
     ListaOportunidades:
       type: object

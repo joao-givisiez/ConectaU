@@ -233,8 +233,12 @@ encontrada pelo estudante no momento adequado.
 
 ## 🏗️ Documentação de arquitetura
 
-A arquitetura está em [`docs/arquitetura/`](docs/arquitetura/). Comece pela
-[**visão geral**](docs/arquitetura/ARQUITETURA-CONECTAU.md), que traz o diagrama
+> 📘 **Comece por [`SISTEMA.md`](SISTEMA.md)**: explica como o sistema funciona de ponta a ponta
+> (microsserviços, gateway, BFFs, SAGA, CQRS, outbox, assistente com LLM) e traz um mapa de
+> onde encontrar cada coisa no repositório.
+
+Os documentos de cada decisão estão em [`docs/arquitetura/`](docs/arquitetura/). A
+[visão geral da arquitetura](docs/arquitetura/ARQUITETURA-CONECTAU.md) traz o diagrama
 integrado e os números do sistema:
 
 - **5 serviços de domínio:** Identidade, Coleta, Oportunidades, Engajamento e Assistente;
@@ -244,7 +248,8 @@ integrado e os números do sistema:
 
 | Item | Documento |
 |---|---|
-| Visão geral | [`ARQUITETURA-CONECTAU.md`](docs/arquitetura/ARQUITETURA-CONECTAU.md) |
+| **Como o sistema funciona (comece aqui)** | [`SISTEMA.md`](SISTEMA.md) |
+| Visão geral da arquitetura | [`ARQUITETURA-CONECTAU.md`](docs/arquitetura/ARQUITETURA-CONECTAU.md) |
 | 4.1 — Decomposição em microsserviços | [`4.1-microsservicos.md`](docs/arquitetura/4.1-microsservicos.md) |
 | 4.2 — API REST e HATEOAS | [`4.2-api-rest.md`](docs/arquitetura/4.2-api-rest.md) · [`openapi.yaml`](docs/arquitetura/openapi.yaml) |
 | 4.3 — API Gateway | [`4.3-gateway.md`](docs/arquitetura/4.3-gateway.md) |
@@ -254,12 +259,16 @@ integrado e os números do sistema:
 | 4.7 — CQRS | [`4.7-cqrs.md`](docs/arquitetura/4.7-cqrs.md) |
 | Por que um banco e um container por serviço | [`decisoes-isolamento.md`](docs/arquitetura/decisoes-isolamento.md) |
 | Parte 3 — containers, Compose e Kubernetes | [`docs/infraestrutura.md`](docs/infraestrutura.md) |
+| Parte 4 — RAG, agente LangChain e LLM como serviço distribuído | [`docs/parte-4/rag-e-agente.md`](docs/parte-4/rag-e-agente.md) |
+| Parte 4 — avaliação do RAG (com e sem recuperação) | [`docs/parte-4/avaliacao-rag.md`](docs/parte-4/avaliacao-rag.md) |
 
 > A arquitetura apresentada na Parte 2 tinha 7 serviços; ela foi simplificada para 5,
 > mantendo todos os padrões exigidos. O que mudou e por quê está na seção
 > [Revisão em relação à Parte 2](docs/arquitetura/4.1-microsservicos.md#revisão-em-relação-à-parte-2).
 > Na Parte 3, os 5 serviços, os BFFs, o gateway e os clientes foram implementados e
 > containerizados (Docker Compose e Kubernetes) — ver [Execução e infraestrutura](#-execução-e-infraestrutura).
+> Na Parte 4, o Assistente ganhou o RAG completo com agente LangChain e LLM da Groq, tratado como
+> dependência falível (circuit breaker, retentativa com backoff, cache e fallback).
 
 ---
 
@@ -279,6 +288,8 @@ Os detalhes de imagens, multi-stage, redes, volumes e manifests estão em [`docs
 | **Node.js 22 + TypeScript** | Serviços e BFFs, num monorepo com npm workspaces e um pacote compartilhado ([`packages/comum`](packages/comum/)) |
 | **PostgreSQL 17** (5 instâncias, uma com **pgvector**) e **MongoDB 8** | Database per service |
 | **RabbitMQ 4** | Eventos publicados pela outbox de Oportunidades |
+| **LangChain** + **Groq** (`openai/gpt-oss-120b`) | Agente e chains do Assistente; LLM remoto |
+| **transformers.js** (`multilingual-e5-small`) | Embeddings locais do RAG, sem API externa |
 | **Traefik 3** | API Gateway no Compose e Ingress Controller no Kubernetes |
 | **nginx** | Servidor dos clientes (Portal Web e Painel Admin) |
 | **Docker Compose** e **Kubernetes** | Execução local e orquestração |
@@ -293,6 +304,24 @@ docker compose up -d --build
 docker compose ps                 # todos devem ficar "healthy" em ~1 minuto
 ```
 
+**LLM do assistente.** Para o assistente gerar respostas, preencha `GROQ_API_KEY` no `.env` com uma
+chave criada em https://console.groq.com/keys e rode `docker compose up -d assistente`. É a única
+configuração a completar. Sem a chave, todo o sistema funciona, e o assistente responde em modo de
+recuperação (os trechos mais relevantes, sem texto gerado). A primeira construção da imagem do Assistente
+baixa o modelo de embeddings (~130 MB).
+
+**Atualizando a partir da Parte 3.** O banco do Assistente mudou de esquema (vetores de 384 posições e
+tabelas novas), e o esquema só é aplicado num volume vazio. Recrie o volume dele uma vez:
+
+```powershell
+docker compose rm -sf assistente assistente-db
+docker volume rm conectau_assistente-dados
+docker compose up -d --build
+```
+
+Ou apague todos os dados de teste com `docker compose down -v`. As oportunidades já publicadas antes
+disso não estarão no índice do assistente; publique de novo ou comece do zero.
+
 | Endereço | O que é |
 |---|---|
 | http://localhost:8080 | **Portal Web** (comunidade) |
@@ -304,11 +333,23 @@ Na primeira subida, a Coleta já roda uma coleta da fonte de exemplo, com **dado
 
 Para encerrar, use `docker compose down`, que preserva os volumes dos bancos. Para apagar os dados e reexecutar os esquemas, use `docker compose down -v`.
 
-**Demonstração de ponta a ponta.** Requer Node.js 22 no host. O script percorre todo o fluxo pelo gateway: login, curadoria, SAGA (caminho feliz e falha com compensação), CQRS, feed, favoritos, assistente, segurança e encerramento.
+**Demonstração de ponta a ponta.** Requer Node.js 22 no host. O script percorre todo o fluxo pelo gateway: login, curadoria, SAGA (caminho feliz e falha com compensação), CQRS, feed, favoritos, assistente (RAG, agente e catálogo), segurança, falha do LLM com fallback e circuit breaker, e encerramento.
 
 ```powershell
 node scripts/demonstracao.mjs
 ```
+
+**Assistente e LLM:**
+
+```powershell
+node scripts/falha-llm.mjs on       # derruba o provedor de LLM (fallback e, após 3 falhas, circuito aberto)
+node scripts/falha-llm.mjs status   # disjuntor, latência, tokens e custo das respostas
+node scripts/falha-llm.mjs off
+node scripts/avaliar-rag.mjs        # avaliação com e sem recuperação -> docs/parte-4/avaliacao-rag.md
+```
+
+Para testar sem gastar tokens, há um simulador da API da Groq: `node scripts/groq-simulado.mjs` e, no `.env`,
+`GROQ_API_KEY=teste` e `GROQ_BASE_URL=http://host.docker.internal:4010` (só para testes; as respostas são simuladas).
 
 **Provocar a falha da SAGA manualmente.** Pare o Assistente, publique uma oportunidade pelo Painel Admin e veja a compensação acontecer:
 
@@ -338,10 +379,12 @@ docker compose build
 # 2. Só no Kubernetes do Docker Desktop em modo kind: carregar as imagens no nó
 node scripts/carregar-imagens-kind.mjs
 
-# 3. Criar o arquivo de segredos (ignorado pelo Git) e trocar os valores
+# 3. Criar o arquivo de segredos (ignorado pelo Git) e trocar os valores (inclusive GROQ_API_KEY)
 Copy-Item infrastructure/kubernetes/segredos.env.example infrastructure/kubernetes/segredos.env
 
 # 4. Aplicar tudo (namespace, ConfigMaps, Secret, StatefulSets, Deployments, Services e Ingress)
+#    Vindo da Parte 3? Antes, apague o banco do Assistente (o esquema mudou):
+#    kubectl delete statefulset assistente-db -n conectau; kubectl delete pvc dados-assistente-db-0 -n conectau
 kubectl apply -k infrastructure/kubernetes
 kubectl get pods -n conectau -w
 ```
