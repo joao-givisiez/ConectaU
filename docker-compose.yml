@@ -10,7 +10,8 @@
 #   rede-mensageria   RabbitMQ e quem publica/consome eventos
 #   rede-dados-*      um banco por rede: só o serviço dono alcança o próprio banco
 #   rede-gerencia     apenas para publicar o painel do RabbitMQ no host
-# Todas as redes internas usam `internal: true` (sem saída para a internet).
+#   rede-saida        única rede com saída para a internet: só o Assistente a usa, para chamar o LLM (Groq)
+# As redes internas usam `internal: true` (sem saída para a internet); a exceção é a rede-saida.
 
 name: conectau
 
@@ -260,9 +261,21 @@ services:
       DB_SENHA: ${ASSISTENTE_DB_SENHA:?defina no .env}
       TOKEN_SERVICO: ${TOKEN_SERVICO:?defina no .env}
       SIMULAR_FALHA_INDEXACAO: ${SIMULAR_FALHA_INDEXACAO:-false}
-    networks: [rede-aplicacao, rede-dados-assistente]
+      # Eventos editada/encerrada mantêm o índice dos editais em dia depois da publicação.
+      RABBITMQ_URL: amqp://${RABBITMQ_USUARIO:?defina no .env}:${RABBITMQ_SENHA:?defina no .env}@rabbitmq:5672
+      # Catálogo de oportunidades, consultado pelas ferramentas do agente.
+      OPORTUNIDADES_URL: http://oportunidades:3103
+      # LLM (Groq). Sem GROQ_API_KEY o assistente responde em modo de recuperação (sem texto gerado).
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GROQ_MODELO: ${GROQ_MODELO:-openai/gpt-oss-120b}
+      # Só para testes: aponta para o simulador local (scripts/groq-simulado.mjs).
+      GROQ_BASE_URL: ${GROQ_BASE_URL:-}
+    networks: [rede-aplicacao, rede-mensageria, rede-dados-assistente, rede-saida]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       assistente-db: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
 
   assistente-db:
     <<: *reinicio
@@ -322,3 +335,6 @@ networks:
   rede-dados-assistente:
     internal: true
   rede-gerencia:
+  # Única com saída para a internet. Só o Assistente participa: ele chama o provedor de LLM e
+  # não guarda dados pessoais, então o que sai dele é a pergunta e trechos públicos.
+  rede-saida:
