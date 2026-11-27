@@ -1,0 +1,16 @@
+{
+  "name": "conectau-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Interface do ConectaU: portal da comunidade, assistente e curadoria. HTML, CSS e JavaScript puros, sem etapa de build.",
+  "type": "module",
+  "scripts": {
+    "dev": "node servidor-dev.mjs",
+    "test": "node tests/interface.mjs",
+    "test:rotas": "node tests/rotas.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "ISC"
+}

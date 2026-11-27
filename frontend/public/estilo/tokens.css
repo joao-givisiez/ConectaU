@@ -1,0 +1,231 @@
+/*
+  ConectaU — sistema visual.
+  Âncora: Organic. Terra, serifa humanista, cantos de 16 a 32 px, grão de 1 a 3 % e movimento de 300 a 500 ms.
+
+  Superfícies: sálvia, barro, terracota, ocre e musgo nos tons exatos da âncora; areia e aveia como superfícies claras.
+  Os tons "-fundo" são a mesma família de cor, escurecida só onde carrega texto pequeno
+  (relação de contraste mínima de 4,5:1, conferida no README).
+  Proibido aqui: creme (#F0 ou mais claro), branco puro, preto puro, cinza frio, canto reto.
+*/
+
+@font-face {
+  font-family: "Fraunces";
+  src: url("../fontes/fraunces-latin-full-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Fraunces";
+  src: url("../fontes/fraunces-latin-full-italic.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Epilogue";
+  src: url("../fontes/epilogue-latin-wght-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: light;
+
+  /* Âncora */
+  --salvia: #8b9d83;
+  --barro: #b08b6e;
+  --terracota: #c66b3d;
+  --ocre: #c08e3a;
+  --musgo: #606c38;
+  --areia: #e8dcc7;
+  --aveia: #d4b895;
+
+  /* Mesma família, mais escura, para superfícies e texto pequeno */
+  --musgo-fundo: #47502a;
+  --terracota-fundo: #9a4720;
+  --ocre-fundo: #7a5410;
+  --salvia-fundo: #4f6149;
+  --barro-fundo: #7a5a40;
+
+  /* Tinta (marrom-terra, nunca preto) */
+  --tinta: #2e2619;
+  --tinta-suave: #5a4a36;
+
+  /* Papéis */
+  --fundo: var(--areia);
+  --superficie: var(--areia);
+  --borda: var(--aveia);
+  --texto: var(--tinta);
+  --texto-suave: var(--tinta-suave);
+  --acao: var(--musgo-fundo);
+  --acao-texto: var(--areia);
+  --destaque: var(--terracota-fundo);
+  --alerta: var(--terracota-fundo);
+
+  /* Cantos: só de 16 a 32 px */
+  --raio-p: 16px;
+  --raio-m: 24px;
+  --raio-g: 32px;
+  --raio-organico: 32px 16px 32px 16px;
+  --raio-organico-inverso: 16px 32px 16px 32px;
+
+  /* Sombras tingidas de musgo, nunca cinza */
+  --sombra-p: 0 1px 2px rgb(71 80 42 / 0.18);
+  --sombra-m: 0 12px 28px -14px rgb(71 80 42 / 0.45);
+  --sombra-g: 0 24px 48px -20px rgb(71 80 42 / 0.5);
+
+  /* Movimento suave */
+  --suave: cubic-bezier(0.4, 0, 0.2, 1);
+  --duracao: 400ms;
+
+  --serifa: "Fraunces", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --sans: "Epilogue", "Segoe UI", system-ui, -apple-system, sans-serif;
+
+  --coluna: 1120px;
+  --margem: 16px;
+  --altura-topo: 68px;
+}
+
+@media (min-width: 720px) {
+  :root { --margem: 28px; }
+}
+
+/* ---------- Reinício ---------- */
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--altura-topo) + 36px);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--fundo);
+  color: var(--texto);
+  font-family: var(--sans);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  font-weight: 420;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Grão de papel: ruído fractal a cerca de 2 %, por cima de tudo e sem capturar cliques. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0.03;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='g' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.18  0 0 0 0 0.15  0 0 0 0 0.1  0 0 0 1 0'/></filter><rect width='100%25' height='100%25' filter='url(%23g)'/></svg>");
+}
+
+img, svg { display: block; max-width: 100%; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: var(--destaque); text-underline-offset: 3px; text-decoration-thickness: 1.5px; }
+a:hover { color: var(--musgo-fundo); }
+p { margin: 0 0 1em; }
+ul, ol { margin: 0; padding: 0; list-style: none; }
+h1, h2, h3, h4 { margin: 0; }
+
+::selection { background: var(--ocre); color: var(--tinta); }
+
+:focus-visible {
+  outline: 3px solid var(--ocre-fundo);
+  outline-offset: 3px;
+  border-radius: var(--raio-p);
+}
+
+/* ---------- Tipografia ---------- */
+
+.serifa,
+h1, h2, h3 {
+  font-family: var(--serifa);
+  font-optical-sizing: auto;
+  font-variation-settings: "SOFT" 100, "WONK" 1;
+  font-weight: 560;
+  line-height: 1.12;
+  letter-spacing: -0.012em;
+  color: var(--tinta);
+  text-wrap: balance;
+}
+
+h1 { font-size: clamp(2.35rem, 6.2vw, 4.25rem); font-weight: 520; letter-spacing: -0.025em; }
+h2 { font-size: clamp(1.6rem, 3.4vw, 2.2rem); }
+h3 { font-size: 1.3rem; }
+
+h1 em, h2 em {
+  font-style: italic;
+  font-weight: 420;
+  color: var(--terracota-fundo);
+}
+
+.suave { color: var(--texto-suave); }
+.pequeno { font-size: 0.9rem; }
+.numero { font-variant-numeric: tabular-nums; }
+
+.somente-leitor {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.oculto { display: none !important; }
+
+/* ---------- Estrutura ---------- */
+
+.pular {
+  position: absolute;
+  left: var(--margem);
+  top: -80px;
+  z-index: 1100;
+  padding: 10px 18px;
+  background: var(--musgo-fundo);
+  color: var(--areia);
+  border-radius: var(--raio-p);
+  transition: top var(--duracao) var(--suave);
+}
+.pular:focus { top: 12px; color: var(--areia); }
+
+.coluna {
+  width: 100%;
+  max-width: var(--coluna);
+  margin-inline: auto;
+  padding-inline: var(--margem);
+}
+
+main {
+  display: block;
+  padding-block: 28px 120px;
+  min-height: calc(100vh - var(--altura-topo));
+  outline: none;
+}
+
+@media (min-width: 900px) {
+  main { padding-block: 48px 96px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
