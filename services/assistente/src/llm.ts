@@ -20,8 +20,6 @@ export interface ConfigLlm {
   /** Sem chave, o Assistente funciona em modo de recuperação (sem texto gerado). */
   chave: string | undefined;
   modelo: string;
-  /** Endereço alternativo da API (ex.: o simulador local de testes). */
-  baseUrl: string | undefined;
   esforcoRaciocinio: "low" | "medium" | "high" | undefined;
   timeoutMs: number;
   retentativas: number;
@@ -49,7 +47,6 @@ export function lerConfigLlm(): ConfigLlm {
   return {
     chave: texto("GROQ_API_KEY"),
     modelo,
-    baseUrl: texto("GROQ_BASE_URL"),
     esforcoRaciocinio: bruto === "low" || bruto === "medium" || bruto === "high" ? bruto : undefined,
     timeoutMs: variavelNumero("LLM_TIMEOUT_MS", 20_000),
     retentativas: variavelNumero("LLM_RETENTATIVAS", 2),
@@ -222,7 +219,6 @@ export class ProvedorLlm {
         timeout: this.config.timeoutMs,
         // As retentativas são nossas (com backoff e disjuntor); as do LangChain ficam desligadas.
         maxRetries: 0,
-        ...(this.config.baseUrl ? { baseUrl: this.config.baseUrl } : {}),
         ...(this.config.esforcoRaciocinio ? { reasoningEffort: this.config.esforcoRaciocinio } : {})
       },
       this.politica
@@ -241,21 +237,32 @@ export class ProvedorLlm {
   estado(): {
     configurado: boolean;
     modelo: string;
-    baseUrlPersonalizada: boolean;
     disjuntor: ResumoDisjuntor;
     simulacao: SimulacaoDeFalha;
   } {
     return {
       configurado: this.chaveConfigurada,
       modelo: this.config.modelo,
-      baseUrlPersonalizada: this.config.baseUrl !== undefined,
       disjuntor: this.politica.disjuntor.resumo(),
       simulacao: { ...this.politica.simulacao }
     };
   }
 }
 
-/** Remove blocos de raciocínio (<think>...</think>) que alguns modelos incluem no texto. */
+/**
+ * Limpa o texto do modelo: remove blocos de raciocínio (<think>...</think>) e normaliza o que o gpt-oss emite
+ * e quebra o resto do sistema (marcadores de citação, busca de texto): espaços e hífens sem quebra,
+ * caracteres de largura zero e citações fora do padrão ("【F1】", "[ F2 ]" e "[F1, F2]" viram "[F1]", "[F2]"
+ * e "[F1] [F2]"). Descoberto na avaliação com a Groq real.
+ */
 export function limparResposta(textoBruto: string): string {
-  return textoBruto.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+  return textoBruto
+    .replace(/<think>[\s\S]*?<\/think>/gi, "")
+    .replace(/[\u200B-\u200D\u2060\uFEFF]/g, "")
+    .replace(/[\u00A0\u2007\u202F]/g, " ")
+    .replace(/\u2011/g, "-")
+    .replace(/[\u3010[]\s*(F\d+(?:\s*[,;]\s*F\d+)*)\s*[\u3011\]]/g, (_inteiro, ids) =>
+      String(ids).split(/\s*[,;]\s*/).map((id) => `[${id}]`).join(" ")
+    )
+    .trim();
 }
