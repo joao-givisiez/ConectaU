@@ -48,6 +48,7 @@ Os arquivos mais pedidos na apresentação, a um clique.
 | **Contrato da API** (OpenAPI) | [`openapi.yaml`](docs/arquitetura/openapi.yaml) · [tabela de endpoints](docs/arquitetura/4.2-api-rest.md) |
 | **Manifests do Kubernetes** | [`infrastructure/kubernetes/`](infrastructure/kubernetes/) |
 | **Vídeos** | [Entrega da Parte 3](https://drive.google.com/drive/folders/1_DyPLt6FhXqFV3msJlyv8K-zaNSfAilI?usp=sharing) · [Apresentação da Parte 4](https://drive.google.com/drive/folders/1RMfmpTee2t_p9UVo2xa4N_pcoxAWNv33?usp=sharing) |
+| **Interface** (portal, assistente e curadoria) | [`frontend/`](frontend/README.md) · abre em `http://localhost:8080/app/` |
 | **Variáveis de ambiente** (modelo do `.env`) | [`.env.example`](.env.example) |
 
 ---

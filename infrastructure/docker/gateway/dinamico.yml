@@ -5,6 +5,7 @@
 #   /web/conversas/**                   → BFF Web   (limite de requisições mais restrito: LLM)
 #   /admin/**                           → BFF Admin (exige JWT com papel ADMIN)
 #   /painel/**                          → Painel Admin (arquivos estáticos)
+#   /app/**                             → Frontend (portal, assistente e curadoria numa só interface)
 #   /                                   → Portal Web  (arquivos estáticos)
 #   /internal/**                        → sem rota: nunca exposto
 http:
@@ -43,6 +44,14 @@ http:
       priority: 90
       middlewares: [painel-com-barra, sem-prefixo-painel]
       service: painel-admin
+
+    # Interface única (portal, assistente e curadoria). Fala com /auth, /web e /admin na mesma origem.
+    frontend:
+      rule: "Path(`/app`) || PathPrefix(`/app/`)"
+      entryPoints: [web]
+      priority: 90
+      middlewares: [app-com-barra, sem-prefixo-app]
+      service: frontend
 
     portal:
       rule: "PathPrefix(`/`)"
@@ -91,6 +100,13 @@ http:
       redirectRegex:
         regex: "^(https?://[^/]+/painel)$"
         replacement: "${1}/"
+    sem-prefixo-app:
+      stripPrefix:
+        prefixes: ["/app"]
+    app-com-barra:
+      redirectRegex:
+        regex: "^(https?://[^/]+/app)$"
+        replacement: "${1}/"
 
   services:
     identidade:
@@ -113,3 +129,7 @@ http:
       loadBalancer:
         servers:
           - url: "http://painel-admin:8080"
+    frontend:
+      loadBalancer:
+        servers:
+          - url: "http://frontend:8080"

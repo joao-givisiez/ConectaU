@@ -2,6 +2,7 @@
 #   docker compose up -d --build
 #
 # Acesso:  Portal Web http://localhost:8080 · Painel Admin http://localhost:8080/painel/
+#          Nova interface (portal, assistente e curadoria) http://localhost:8080/app/
 #          Painel do Traefik http://127.0.0.1:8081 · RabbitMQ http://127.0.0.1:15672
 #
 # Redes (isolamento por camada):
@@ -40,6 +41,7 @@ services:
       bff-admin: { condition: service_started }
       portal-web: { condition: service_started }
       painel-admin: { condition: service_started }
+      frontend: { condition: service_started }
 
   portal-web:
     <<: *reinicio
@@ -51,6 +53,13 @@ services:
     <<: *reinicio
     build: clients/painel-admin
     image: conectau/painel-admin:1.0.0
+    networks: [rede-borda]
+
+  # Interface única: portal da comunidade, assistente e curadoria. O gateway a publica em /app/.
+  frontend:
+    <<: *reinicio
+    build: frontend
+    image: conectau/frontend:1.0.0
     networks: [rede-borda]
 
   bff-web:
