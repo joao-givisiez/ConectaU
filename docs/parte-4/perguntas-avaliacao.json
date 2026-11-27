@@ -6,7 +6,7 @@
       "tipo": "conhecimento",
       "pergunta": "Com quanto tempo de antecedência o lembrete me avisa se eu não escolher nada?",
       "fonteEsperada": { "documento": "04-favoritos-lembretes-e-avisos.md" },
-      "fatos": ["48"],
+      "fatos": ["48 horas"],
       "porque": "Regra própria do ConectaU (padrão de 48 horas): um modelo sem recuperação não tem como saber."
     },
     {

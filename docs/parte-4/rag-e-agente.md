@@ -146,7 +146,7 @@ Os quatro mecanismos do enunciado estão implementados. Toda chamada ao modelo p
 
 **Calibração do cache semântico.** Nos pares medidos, paráfrases da mesma pergunta ficaram entre 0,91 e 0,98. Perguntas diferentes sobre o mesmo tema chegaram a 0,90 ("nota mínima da monitoria" contra "valor da bolsa de monitoria"), e "como funcionam os lembretes" contra "como criar um lembrete" deu 0,944. O limiar de 0,95 é conservador de propósito: devolver a resposta de outra pergunta é pior do que perder um acerto. As variações de caixa, acento e pontuação já são cobertas pela chave exata.
 
-**Testes executados** (com o simulador da API da Groq, [`scripts/groq-simulado.mjs`](../../scripts/groq-simulado.mjs), que imita as respostas e falhas do provedor):
+**Testes de falha executados** (as falhas 429, 503 e 401 foram injetadas com um servidor local que imitava a API da Groq, usado só no desenvolvimento e removido depois da integração com a Groq real; o caso 503 continua reproduzível com `falha-llm.mjs on`):
 
 | Cenário | Resultado medido |
 |---|---|
@@ -188,7 +188,7 @@ node scripts/avaliar-rag.mjs            # mede as perguntas de teste nos 4 modos
 | Fallback depois de 3 tentativas com o provedor fora do ar | ~1,1 a 1,3 s |
 | Ferramenta `consultar_base_conhecimento` (busca vetorial) | 8 a 27 ms (média 15) |
 | Ferramenta `buscar_oportunidades` (chamada HTTP a Oportunidades) | 10 a 14 ms |
-| Resposta do LLM (agente: 2 chamadas ao modelo; cadeia RAG: 1) | **Medir com `GROQ_API_KEY`**: o relatório [`avaliacao-rag.md`](avaliacao-rag.md) traz a média de cada modo |
+| Resposta do LLM, medida com a Groq real (`openai/gpt-oss-120b`) | Sem recuperação: 0,5 a 0,8 s (média 628 ms). Cadeia RAG, 1 chamada: 0,56 a 0,92 s (média 675 ms). Agente, 2 chamadas e 1 ferramenta: 1,0 a 1,5 s (média 1.228 ms) |
 
 Fora o LLM, o caminho inteiro custa dezenas de milissegundos. A latência percebida é a do provedor, e é por isso que o cache e o disjuntor existem.
 
@@ -196,23 +196,26 @@ Fora o LLM, o caminho inteiro custa dezenas de milissegundos. A latência perceb
 
 Preço de referência do `openai/gpt-oss-120b` na Groq: **US$ 0,15 por milhão de tokens de entrada e US$ 0,60 por milhão de saída** (página do modelo na documentação da Groq; confira o valor vigente antes de apresentar, e ajuste `GROQ_PRECO_ENTRADA_USD_MILHAO` / `GROQ_PRECO_SAIDA_USD_MILHAO` se mudar). Os embeddings não custam nada por operação, porque rodam no próprio serviço.
 
-Tamanho do prompt, medido no código: as instruções do agente têm ~1.700 caracteres, as descrições das ferramentas ~870 e cada trecho recuperado até ~700 (5 por consulta).
+Tokens e custo **medidos** com a Groq real (16 chamadas ao modelo na avaliação de 2026-11-27, preço acima):
 
-| Modo | Chamadas ao modelo | Tokens de entrada (estim.) | Tokens de saída (estim., com raciocínio "low") | Custo por pergunta |
+| Modo | Chamadas ao modelo | Tokens de entrada (média) | Tokens de saída (média, com raciocínio "low") | Custo por pergunta |
 |---|---|---|---|---|
-| Agente com uma ferramenta | 2 | ~2.500 a 3.200 | ~200 a 400 | **~US$ 0,0005 a 0,0007** |
-| Cadeia RAG | 1 | ~1.000 a 1.300 | ~150 a 300 | ~US$ 0,0003 |
+| Agente com uma ferramenta | 2 | 2.515 (2.383 a 2.613) | 206 (118 a 375) | **US$ 0,0005** |
+| Cadeia RAG | 1 | 784 | 94 | US$ 0,00017 |
+| LLM sem recuperação | 1 | 201 | 98 | US$ 0,00009 |
 | Cache, recusa ou fallback | 0 | 0 | 0 | US$ 0 |
 
-Em escala, para o agente a ~US$ 0,0006 por pergunta:
+O agente custa cerca de 3 vezes a cadeia RAG: ele carrega as instruções e as descrições das ferramentas nas duas chamadas. A estimativa feita antes da chave (US$ 0,0005 a 0,0007) ficou certa para o agente e alta para a cadeia (US$ 0,0003).
+
+Em escala, para o agente a ~US$ 0,0005 por pergunta:
 
 | Perguntas por mês | Sem cache | Com 25% de acertos no cache |
 |---|---|---|
-| 10 mil | ~US$ 6 | ~US$ 4,50 |
-| 100 mil | ~US$ 60 | ~US$ 45 |
-| 1 milhão | ~US$ 600 | ~US$ 450 |
+| 10 mil | ~US$ 5 | ~US$ 3,75 |
+| 100 mil | ~US$ 50 | ~US$ 37,50 |
+| 1 milhão | ~US$ 500 | ~US$ 375 |
 
-Os tokens reais por pergunta saem do relatório de avaliação: basta multiplicar pelos preços. Mesmo no pior cenário, o custo de LLM é pequeno perto da infraestrutura. O que limita a escala são os **limites de requisições por minuto** do plano da Groq, e é aí que o cache, o limite de 10 perguntas por minuto no gateway e a guarda de escopo (que não gasta tokens com perguntas fora do tema) ajudam.
+Mesmo no pior cenário, o custo de LLM é pequeno perto da infraestrutura. O que limita a escala são os **limites de requisições por minuto** do plano da Groq, e é aí que o cache, o limite de 10 perguntas por minuto no gateway e a guarda de escopo (que não gasta tokens com perguntas fora do tema) ajudam.
 
 ## 9. Avaliação do RAG
 
@@ -234,12 +237,26 @@ Cada pergunta roda em **4 modos**, numa conversa nova (sem histórico): só recu
 
 O relatório gerado, com todas as respostas lado a lado, está em [`avaliacao-rag.md`](avaliacao-rag.md).
 
-**O que observar na análise:**
+**Rodada registrada.** Para respeitar o limite baixo do plano gratuito da Groq, a avaliação usou 6 das 11 perguntas (P1, P6, P7, P9, P10 e P11) e o agente em 3 delas (P6, P9 e P10): 21 execuções e 16 chamadas ao modelo (`--perguntas`, `--modos` e `--agente` do script). Modelo `openai/gpt-oss-120b`, em 2026-11-27. É uma amostra pequena; o relatório completo, com as respostas lado a lado, está em [`avaliacao-rag.md`](avaliacao-rag.md).
 
-- Nas perguntas P1 e P6 a P8, a linha de base sem recuperação não tem como acertar (48 h, nota 7,0, 40 vagas são dados do ConectaU). Ela deve responder de forma genérica ou admitir que não sabe, enquanto RAG e agente devem trazer o fato e a citação.
-- A P10 mede alucinação: o risco é a linha de base inventar um valor plausível de bolsa. Com recuperação, a resposta deve dizer que o edital não informa.
-- A P9 mostra a diferença entre a cadeia RAG (que só tem o índice) e o agente (que consulta o catálogo com prazos atualizados).
-- O custo do agente é maior que o da cadeia RAG (2 chamadas ao modelo). O ganho é escolher a fonte certa e não poluir o contexto quando a pergunta não precisa de recuperação.
+| Modo | Fatos esperados presentes | Citou fontes | Latência média | Custo médio |
+|---|---|---|---|---|
+| LLM sem recuperação | **0%** (0 de 6) | 0% | 628 ms | US$ 0,00009 |
+| Cadeia RAG | **100%** (6 de 6) | 80% | 675 ms | US$ 0,00017 |
+| Agente (RAG + ferramentas) | **100%** (3 de 3) | 67% | 1.228 ms | US$ 0,0005 |
+
+**Análise.**
+
+- **P1 (regra própria do ConectaU).** Sem recuperação, o modelo respondeu com segurança que o lembrete padrão é de **24 horas**. O correto é **48**: resposta errada e convincente, o risco que o RAG existe para evitar. Com recuperação, acertou e citou o trecho.
+- **P6 e P7 (dados que só existem no edital).** Sem recuperação, o modelo disse que não tinha acesso ao edital (honesto, mas inútil). Com a cadeia RAG trouxe nota 7,0, 12 horas semanais, 40 vagas e o que levar, com a fonte (o agente, rodado só na P6, também acertou).
+- **P9 (catálogo atual).** Sem recuperação, não soube. A cadeia RAG listou as duas bolsas porque os editais estão no índice. O agente chamou a ferramenta `buscar_oportunidades` e trouxe também prazo ("faltam 15 dias"), data de início e requisitos, que vêm do catálogo e não do índice. É onde o agente se paga.
+- **P10 (informação que não existe).** Nenhum modo inventou valor: os três disseram que o edital não informa. Nesta amostra, o risco de alucinação não apareceu nem na linha de base, então a P10 não separa os modos.
+- **P11 (fora do escopo).** Recusada nos três modos executados, sem gastar tokens, pela guarda de escopo.
+- **Recuperação.** Nas 4 perguntas com fonte conhecida, a fonte certa veio em 1º lugar (MRR 1,0). Numa rodada anterior só de recuperação, que não gasta tokens (`--modos=recuperacao`), com as 9 perguntas de fonte conhecida, o acerto foi de 89% no 1º trecho e 100% entre os 3 primeiros (MRR 0,94).
+
+**Limites da avaliação.** A amostra é pequena e a métrica de fatos é uma busca de texto: já deu um falso positivo na P1 (a resposta errada citava "48 h" como exemplo; a lista de fatos passou a ser "48 horas"). A leitura das respostas, no relatório, é a análise que vale.
+
+**O que a avaliação real descobriu.** O `gpt-oss-120b` escreve espaços e hífens sem quebra (U+202F, U+2011), caracteres de largura zero e citações como `【F1】` ou `[ F2 ]`. Isso quebrava a detecção de citações: o portal não mostrava os índices e as fontes não eram marcadas como citadas. A função `limparResposta` ([`llm.ts`](../../services/assistente/src/llm.ts)) passou a normalizar o texto, e uma nova chamada à Groq confirmou: texto limpo e fonte marcada.
 
 ## 10. Configuração
 
@@ -247,7 +264,6 @@ O relatório gerado, com todas as respostas lado a lado, está em [`avaliacao-ra
 |---|---|---|
 | `GROQ_API_KEY` | vazia | **Única que precisa ser preenchida.** Sem ela, o assistente responde em modo de recuperação e todo o resto do sistema funciona |
 | `GROQ_MODELO` | `openai/gpt-oss-120b` | Modelo da Groq; `openai/gpt-oss-20b` é mais barato e mais rápido |
-| `GROQ_BASE_URL` | vazia | Só para testes com o simulador local |
 | `GROQ_REASONING_EFFORT` | `low` (modelos gpt-oss) | Esforço de raciocínio: menos tokens de saída e menor latência |
 | `LLM_*` | ver seção 7 | Timeout, retentativas, disjuntor e cache |
 | `ESCOPO_SIMILARIDADE_*` | 0,835 / 0,830 | Guarda de escopo |

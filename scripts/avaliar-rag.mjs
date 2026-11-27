@@ -4,6 +4,12 @@
 //   node scripts/avaliar-rag.mjs [--url=http://localhost:8080] [--saida=docs/parte-4/avaliacao-rag.md] [--ritmo=6500]
 //   node scripts/avaliar-rag.mjs --relatorio=docs/parte-4/avaliacao-rag.json   (só regera o .md a partir dos resultados salvos)
 //
+// Para gastar menos tokens do provedor (o plano gratuito da Groq tem limite baixo):
+//   --perguntas=P1,P6,P9      roda só essas perguntas
+//   --modos=recuperacao,rag   roda só esses modos em todas elas
+//   --agente=P6,P9            liga o modo agente só nessas perguntas (ele faz 2 chamadas ao modelo por pergunta)
+//   --ritmoLlm=15000          pausa (ms) depois de cada chamada ao LLM; o agente espera o dobro
+//
 // Para cada pergunta, quatro modos do mesmo endpoint (POST /web/conversas/{id}/mensagens):
 //   recuperacao       só a busca vetorial no pgvector, sem LLM (mede a qualidade da recuperação)
 //   sem-recuperacao   linha de base: o LLM responde sem nenhum dado do ConectaU
@@ -21,6 +27,7 @@ const argumentos = Object.fromEntries(
 const BASE = argumentos.url ?? "http://localhost:8080";
 const SAIDA = argumentos.saida ?? "docs/parte-4/avaliacao-rag.md";
 const RITMO_MS = Number(argumentos.ritmo ?? 6500);
+const RITMO_LLM_MS = Number(argumentos.ritmoLlm ?? RITMO_MS);
 const MODOS = ["recuperacao", "sem-recuperacao", "rag", "agente"];
 const NOME_DO_MODO = {
   recuperacao: "Só recuperação (sem LLM)",
@@ -31,6 +38,11 @@ const NOME_DO_MODO = {
 
 const ambiente = { ...lerEnv(".env"), ...process.env };
 const conjunto = JSON.parse(readFileSync("docs/parte-4/perguntas-avaliacao.json", "utf8"));
+const lista = (nome) => argumentos[nome]?.split(",").map((s) => s.trim()).filter(Boolean);
+if (lista("perguntas")) conjunto.perguntas = conjunto.perguntas.filter((p) => lista("perguntas").includes(p.id));
+const MODOS_BASE = lista("modos") ?? MODOS;
+/** Modos executados numa pergunta: os de --modos e, se pedido em --agente, o agente. */
+const modosDa = (pergunta) => MODOS.filter((m) => MODOS_BASE.includes(m) || (m === "agente" && (lista("agente") ?? []).includes(pergunta.id)));
 const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function lerEnv(arquivo) {
@@ -76,6 +88,21 @@ const normalizar = (texto) =>
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
     .toLowerCase();
+
+/**
+ * Mesma limpeza que o Assistente aplica ao texto do modelo (limparResposta em services/assistente/src/llm.ts):
+ * espaços e hífens sem quebra, caracteres de largura zero e citações fora do padrão ("【F1】" → "[F1]").
+ * As respostas guardadas pela avaliação de 2026-11-27 são as originais da Groq, anteriores a essa correção.
+ */
+const padronizar = (texto) =>
+  String(texto ?? "")
+    .replace(/[\u200B-\u200D\u2060\uFEFF]/g, "")
+    .replace(/[\u00A0\u2007\u202F]/g, " ")
+    .replace(/\u2011/g, "-")
+    .replace(/[\u3010[]\s*(F\d+(?:\s*[,;]\s*F\d+)*)\s*[\u3011\]]/g, (_i, ids) =>
+      ids.split(/\s*[,;]\s*/).map((id) => `[${id}]`).join(" ")
+    )
+    .trim();
 
 // ---------------------------------------------------------------- dados de exemplo
 
@@ -160,22 +187,24 @@ function posicaoDaFonte(resultado, esperada) {
 
 function avaliar(pergunta, resultado) {
   if (!resultado) return undefined;
-  const texto = normalizar(resultado.resposta);
+  const limpa = padronizar(resultado.resposta);
+  const texto = normalizar(limpa);
   const fatos = pergunta.fatos.map((f) => texto.includes(normalizar(f)));
   return {
     usouLlm: resultado.origem === "LLM" || resultado.origem === "CACHE",
     recusou: resultado.origem === "RECUSA",
     fatosCobertos: fatos.filter(Boolean).length,
     fatosTotal: fatos.length,
-    citou: /\[F\d+\]/.test(resultado.resposta),
-    admitiuNaoSaber: ADMITE_QUE_NAO_SABE.test(resultado.resposta),
+    citou: /\[F\d+\]/.test(limpa),
+    admitiuNaoSaber: ADMITE_QUE_NAO_SABE.test(limpa),
     posicao: posicaoDaFonte(resultado, pergunta.fonteEsperada),
-    inventouValor: pergunta.deveAdmitirQueNaoSabe ? /R\$\s?\d/.test(resultado.resposta) : false
+    inventouValor: pergunta.deveAdmitirQueNaoSabe ? /R\$\s?\d/.test(limpa) : false
   };
 }
 
 async function principal() {
-  console.log(`Avaliação do RAG em ${BASE} (${conjunto.perguntas.length} perguntas × ${MODOS.length} modos, ritmo ${RITMO_MS} ms)`);
+  const execucoes = conjunto.perguntas.reduce((s, p) => s + modosDa(p).length, 0);
+  console.log(`Avaliação do RAG em ${BASE} (${conjunto.perguntas.length} perguntas, ${execucoes} execuções, ritmo ${RITMO_MS} ms, ritmo do LLM ${RITMO_LLM_MS} ms)`);
   const admin = (await api("POST", "/auth/sessoes", { corpo: { email: ambiente.ADMIN_EMAIL, senha: ambiente.ADMIN_SENHA } })).dados?.token;
   if (!admin) throw new Error("Login do admin falhou: confira ADMIN_EMAIL e ADMIN_SENHA no .env");
   await garantirEditais(admin);
@@ -195,14 +224,17 @@ async function principal() {
     }
     return r;
   };
-  const minutos = Math.ceil((conjunto.perguntas.length * MODOS.length * 2 * 6.2) / 60);
-  console.log(`   duração estimada: ~${minutos} min (cada pergunta abre uma conversa nova, e as duas chamadas contam no limite do gateway)`);
+  const segundos = conjunto.perguntas.reduce(
+    (s, p) => s + modosDa(p).reduce((t, m) => t + (m === "recuperacao" ? RITMO_MS : m === "agente" ? 2 * RITMO_LLM_MS : RITMO_LLM_MS) / 1000, 0),
+    0
+  );
+  console.log(`   duração estimada: ~${Math.ceil(segundos / 60)} min (cada pergunta abre uma conversa nova)`);
 
   const resultados = [];
   let modelo;
   for (const pergunta of conjunto.perguntas) {
     const porModo = {};
-    for (const modo of MODOS) {
+    for (const modo of modosDa(pergunta)) {
       // Conversa nova a cada pergunta e modo: nenhuma resposta usa o histórico de outra.
       const conversa = (await comoEstudante("POST", "/web/conversas", {})).dados.id;
       const r = await comoEstudante("POST", `/web/conversas/${conversa}/mensagens`, { pergunta: pergunta.pergunta, modo, semCache: true });
@@ -210,9 +242,9 @@ async function principal() {
       porModo[modo] = r.dados;
       modelo ??= r.dados.modelo;
       process.stdout.write(`   ${pergunta.id} ${modo.padEnd(15)} ${r.dados.origem.padEnd(8)} ${String(r.dados.latenciaMs).padStart(5)} ms\n`);
-      await esperar(RITMO_MS);
+      await esperar(modo === "recuperacao" ? RITMO_MS : modo === "agente" ? 2 * RITMO_LLM_MS : RITMO_LLM_MS);
     }
-    resultados.push({ pergunta, porModo, avaliacao: Object.fromEntries(MODOS.map((m) => [m, avaliar(pergunta, porModo[m])])) });
+    resultados.push({ pergunta, porModo, avaliacao: Object.fromEntries(modosDa(pergunta).map((m) => [m, avaliar(pergunta, porModo[m])])) });
   }
 
   mkdirSync(dirname(SAIDA), { recursive: true });
@@ -228,7 +260,7 @@ const media = (valores) => (valores.length === 0 ? 0 : valores.reduce((s, v) => 
 const limpar = (texto) => String(texto ?? "").replace(/\|/g, "\\|").replace(/\s+/g, " ").trim();
 
 function relatorio(resultados, modelo) {
-  const comLlm = resultados.some((r) => r.avaliacao.agente?.usouLlm);
+  const comLlm = resultados.some((r) => Object.entries(r.avaliacao).some(([m, a]) => m !== "recuperacao" && a?.usouLlm));
   const linhas = [];
   linhas.push("# Avaliação do RAG — resultados");
   linhas.push("");
@@ -266,8 +298,9 @@ function relatorio(resultados, modelo) {
   }
   linhas.push("| Modo | Respostas do LLM | Fatos esperados presentes | Citou fontes | Admitiu não saber (P10) | Recusou fora do escopo (P11) | Latência média | Tokens médios (entrada/saída) | Custo médio |");
   linhas.push("|---|---|---|---|---|---|---|---|---|");
-  for (const modo of MODOS) {
-    const doModo = resultados.map((r) => ({ r, a: r.avaliacao[modo], d: r.porModo[modo] }));
+  for (const modo of MODOS.filter((m) => resultados.some((r) => r.porModo[m]))) {
+    // Cada modo conta só as perguntas em que foi executado (a coluna "Respostas do LLM" mostra quantas).
+    const doModo = resultados.filter((r) => r.porModo[modo]).map((r) => ({ r, a: r.avaliacao[modo], d: r.porModo[modo] }));
     const respondidas = doModo.filter((x) => x.a?.usouLlm);
     // Nos modos com LLM, só contam as respostas que o LLM gerou (o fallback é só recuperação).
     const consideradas = modo === "recuperacao" ? doModo : respondidas;
@@ -277,9 +310,11 @@ function relatorio(resultados, modelo) {
     const p11 = doModo.find((x) => x.r.pergunta.deveRecusar);
     const medidas = respondidas.map((x) => x.d);
     linhas.push(
-      `| ${NOME_DO_MODO[modo]} | ${modo === "recuperacao" ? "—" : `${respondidas.length}/${doModo.length}`} | ${pct(fatos, fatosTotal)} | ${modo === "recuperacao" ? "—" : pct(respondidas.filter((x) => x.a.citou).length, respondidas.length)} | ${p10?.a?.usouLlm ? (p10.a.admitiuNaoSaber && !p10.a.inventouValor ? "sim" : "não") : "—"} | ${p11?.a?.recusou ? "sim" : "não"} | ${medidas.length ? `${Math.round(media(medidas.map((d) => d.latenciaMs)))} ms` : `${Math.round(media(doModo.map((x) => x.d.latenciaMs)))} ms`} | ${medidas.length ? `${Math.round(media(medidas.map((d) => d.tokens.entrada)))} / ${Math.round(media(medidas.map((d) => d.tokens.saida)))}` : "—"} | ${medidas.length ? `US$ ${media(medidas.map((d) => d.custoEstimadoUsd)).toFixed(6)}` : "—"} |`
+      `| ${NOME_DO_MODO[modo]} | ${modo === "recuperacao" ? "—" : `${respondidas.length}/${doModo.length}`} | ${pct(fatos, fatosTotal)} | ${modo === "recuperacao" ? "—" : pct(respondidas.filter((x) => x.a.citou).length, respondidas.length)} | ${p10?.a?.usouLlm ? (p10.a.admitiuNaoSaber && !p10.a.inventouValor ? "sim" : "não") : "—"} | ${p11 ? (p11.a?.recusou ? "sim" : "não") : "—"} | ${medidas.length ? `${Math.round(media(medidas.map((d) => d.latenciaMs)))} ms` : `${Math.round(media(doModo.map((x) => x.d.latenciaMs)))} ms`} | ${medidas.length ? `${Math.round(media(medidas.map((d) => d.tokens.entrada)))} / ${Math.round(media(medidas.map((d) => d.tokens.saida)))}` : "—"} | ${medidas.length ? `US$ ${media(medidas.map((d) => d.custoEstimadoUsd)).toFixed(6)}` : "—"} |`
     );
   }
+  linhas.push("");
+  linhas.push("As respostas passam pela mesma limpeza do Assistente (`limparResposta`: espaços sem quebra, citações `【F1】` ou `[ F1 ]` viram `[F1]`). A avaliação foi feita antes dessa correção, então ela é aplicada aqui às respostas originais da Groq.");
   linhas.push("");
   linhas.push("\"Fatos esperados presentes\" conta, em todas as perguntas, quantos fatos da lista `fatos` aparecem no texto da resposta (busca de texto, sem acento). No modo \"só recuperação\" a resposta é o próprio texto dos trechos devolvidos.");
   linhas.push("");
@@ -294,7 +329,7 @@ function relatorio(resultados, modelo) {
     linhas.push("");
     linhas.push("| Modo | Origem | Fatos | Citou | Fonte esperada (posição) | Ferramentas | Latência |");
     linhas.push("|---|---|---|---|---|---|---|");
-    for (const modo of MODOS) {
+    for (const modo of MODOS.filter((m) => r.porModo[m])) {
       const d = r.porModo[modo];
       const a = r.avaliacao[modo];
       linhas.push(
@@ -304,8 +339,8 @@ function relatorio(resultados, modelo) {
     linhas.push("");
     linhas.push("<details><summary>Respostas</summary>");
     linhas.push("");
-    for (const modo of MODOS) {
-      linhas.push(`**${NOME_DO_MODO[modo]}:** ${limpar(r.porModo[modo].resposta).slice(0, 900)}`);
+    for (const modo of MODOS.filter((m) => r.porModo[m])) {
+      linhas.push(`**${NOME_DO_MODO[modo]}:** ${limpar(padronizar(r.porModo[modo].resposta)).slice(0, 900)}`);
       linhas.push("");
     }
     linhas.push("</details>");
@@ -316,6 +351,11 @@ function relatorio(resultados, modelo) {
 
 if (argumentos.relatorio) {
   const salvo = JSON.parse(readFileSync(argumentos.relatorio, "utf8"));
+  // Recalcula as métricas a partir das respostas originais salvas, com a definição atual das perguntas (sem chamar o LLM).
+  for (const r of salvo.resultados) {
+    r.pergunta = conjunto.perguntas.find((p) => p.id === r.pergunta.id) ?? r.pergunta;
+    r.avaliacao = Object.fromEntries(Object.entries(r.porModo).map(([m, d]) => [m, avaliar(r.pergunta, d)]));
+  }
   writeFileSync(SAIDA, relatorio(salvo.resultados, salvo.modelo));
   console.log(`Relatório regerado: ${SAIDA}`);
   process.exit(0);
