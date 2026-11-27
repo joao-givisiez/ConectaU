@@ -350,9 +350,6 @@ node scripts/falha-llm.mjs off
 node scripts/avaliar-rag.mjs        # avaliação com e sem recuperação -> docs/parte-4/avaliacao-rag.md
 ```
 
-Para testar sem gastar tokens, há um simulador da API da Groq: `node scripts/groq-simulado.mjs` e, no `.env`,
-`GROQ_API_KEY=teste` e `GROQ_BASE_URL=http://host.docker.internal:4010` (só para testes; as respostas são simuladas).
-
 **Provocar a falha da SAGA manualmente.** Pare o Assistente, publique uma oportunidade pelo Painel Admin e veja a compensação acontecer:
 
 ```powershell

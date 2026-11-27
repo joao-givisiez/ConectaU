@@ -268,11 +268,7 @@ services:
       # LLM (Groq). Sem GROQ_API_KEY o assistente responde em modo de recuperação (sem texto gerado).
       GROQ_API_KEY: ${GROQ_API_KEY:-}
       GROQ_MODELO: ${GROQ_MODELO:-openai/gpt-oss-120b}
-      # Só para testes: aponta para o simulador local (scripts/groq-simulado.mjs).
-      GROQ_BASE_URL: ${GROQ_BASE_URL:-}
     networks: [rede-aplicacao, rede-mensageria, rede-dados-assistente, rede-saida]
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     depends_on:
       assistente-db: { condition: service_healthy }
       rabbitmq: { condition: service_healthy }

@@ -1138,7 +1138,6 @@ components:
       properties:
         configurado: { type: boolean, description: "GROQ_API_KEY preenchida" }
         modelo: { type: string, example: openai/gpt-oss-120b }
-        baseUrlPersonalizada: { type: boolean, description: "true quando aponta para o simulador local" }
         disjuntor:
           type: object
           properties:
